@@ -1,0 +1,477 @@
+// Hostly Platform - Database Schema
+// Multi-tenant property management & booking platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// IDENTITY DOMAIN
+// ════════════════════════════════════════════════════════════════════════════
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+
+  // Subscription
+  plan      String   @default("free") // free, starter, pro, enterprise
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+
+  // Settings
+  settings  Json     @default("{}")
+  branding  Json     @default("{}")
+
+  // Status
+  status    String   @default("active") // active, suspended, cancelled
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users        User[]
+  properties   Property[]
+  reservations Reservation[]
+  guests       Guest[]
+  payments     Payment[]
+  calendar     CalendarDay[]
+  quotes       Quote[]
+  apiKeys      ApiKey[]
+  website      Website?
+  events       Event[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Profile
+  email         String
+  emailVerified Boolean  @default(false)
+  passwordHash  String?
+  name          String?
+  avatarUrl     String?
+  phone         String?
+
+  // Role & Access
+  role        String   @default("staff") // owner, admin, staff, viewer
+  permissions String[] @default([])
+
+  // Status
+  status      String   @default("active") // active, invited, suspended
+  lastLoginAt DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  apiKeys     ApiKey[]
+  events      Event[]
+
+  @@unique([organizationId, email])
+  @@map("users")
+}
+
+model ApiKey {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
+
+  name       String
+  keyHash    String   // SHA-256 hash of the key
+  keyPrefix  String   // First 8 chars for display
+
+  scopes     String[] @default([])
+  rateLimit  Int      @default(1000) // requests per minute
+
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+
+  createdAt  DateTime @default(now())
+
+  events     Event[]
+
+  @@map("api_keys")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PROPERTY DOMAIN
+// ════════════════════════════════════════════════════════════════════════════
+
+model Property {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Basic Info
+  name        String
+  slug        String
+  type        String   // apartment, villa, hotel_room, house
+  description String?  @db.Text
+
+  // Location
+  address     Json     // { street, city, state, country, zip }
+  coordinates Json?    // { lat, lng }
+  timezone    String   @default("UTC")
+
+  // Capacity
+  maxGuests   Int
+  bedrooms    Int      @default(0)
+  beds        Int      @default(0)
+  bathrooms   Decimal  @default(0) @db.Decimal(3, 1)
+
+  // Pricing (in cents)
+  basePrice   Int
+  currency    String   @default("USD")
+  cleaningFee Int      @default(0)
+
+  // Rules
+  checkInTime  String   @default("15:00")
+  checkOutTime String   @default("11:00")
+  minNights    Int      @default(1)
+  maxNights    Int      @default(365)
+
+  // Status
+  status      String   @default("draft") // draft, active, inactive
+  publishedAt DateTime?
+
+  // Metadata
+  metadata    Json     @default("{}")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  photos       PropertyPhoto[]
+  amenities    PropertyAmenity[]
+  reservations Reservation[]
+  calendar     CalendarDay[]
+  quotes       Quote[]
+
+  @@unique([organizationId, slug])
+  @@map("properties")
+}
+
+model PropertyPhoto {
+  id             String   @id @default(cuid())
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  url          String
+  thumbnailUrl String?
+  caption      String?
+  altText      String?
+  sortOrder    Int      @default(0)
+  isPrimary    Boolean  @default(false)
+
+  createdAt    DateTime @default(now())
+
+  @@map("property_photos")
+}
+
+model Amenity {
+  id       String @id @default(cuid())
+  name     String @unique
+  icon     String?
+  category String? // technology, comfort, safety, outdoor
+
+  properties PropertyAmenity[]
+
+  @@map("amenities")
+}
+
+model PropertyAmenity {
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenityId      String
+  amenity        Amenity  @relation(fields: [amenityId], references: [id])
+  organizationId String
+
+  @@id([propertyId, amenityId])
+  @@map("property_amenities")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BOOKING DOMAIN
+// ════════════════════════════════════════════════════════════════════════════
+
+model Reservation {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id])
+  guestId        String
+  guest          Guest    @relation(fields: [guestId], references: [id])
+
+  // Confirmation
+  confirmationCode String @unique
+
+  // Dates
+  checkIn  DateTime @db.Date
+  checkOut DateTime @db.Date
+
+  // Guests
+  adults   Int @default(1)
+  children Int @default(0)
+  infants  Int @default(0)
+
+  // Pricing (all in cents)
+  currency      String
+  accommodation Int    // nightly rates total
+  cleaningFee   Int    @default(0)
+  serviceFee    Int    @default(0)
+  taxes         Int    @default(0)
+  discounts     Int    @default(0)
+  total         Int
+
+  // Payment
+  paymentStatus String @default("pending") // pending, partial, paid, refunded
+  amountPaid    Int    @default(0)
+
+  // Status
+  status String @default("pending") // pending, confirmed, cancelled, completed
+  source String @default("direct")  // direct, airbnb, booking, vrbo, boom
+
+  // Notes
+  guestNotes    String? @db.Text
+  internalNotes String? @db.Text
+
+  // Timestamps
+  bookedAt    DateTime  @default(now())
+  confirmedAt DateTime?
+  cancelledAt DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  payments Payment[]
+  calendar CalendarDay[]
+
+  @@map("reservations")
+}
+
+model CalendarDay {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  date DateTime @db.Date
+
+  // Availability
+  status        String  @default("available") // available, booked, blocked
+  reservationId String?
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+
+  // Pricing override
+  price     Int? // null = use base price
+  minNights Int? // null = use property default
+
+  // Metadata
+  blockReason String? // "Owner stay", "Maintenance"
+
+  @@unique([propertyId, date])
+  @@map("calendar")
+}
+
+model Quote {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id])
+
+  // Request
+  checkIn  DateTime @db.Date
+  checkOut DateTime @db.Date
+  adults   Int
+  children Int @default(0)
+
+  // Pricing Breakdown
+  currency      String
+  nightlyRates  Json   // [{ date, price }]
+  accommodation Int
+  cleaningFee   Int    @default(0)
+  serviceFee    Int    @default(0)
+  taxes         Int    @default(0)
+  discounts     Json   @default("[]") // [{ type, amount }]
+  total         Int
+
+  // Status
+  status      String   @default("active") // active, expired, converted
+  expiresAt   DateTime
+  convertedTo String?  // reservation id
+
+  createdAt   DateTime @default(now())
+
+  @@map("quotes")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// GUEST DOMAIN
+// ════════════════════════════════════════════════════════════════════════════
+
+model Guest {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Contact
+  email String
+  phone String?
+
+  // Profile
+  firstName String
+  lastName  String
+
+  // Address
+  address Json?
+
+  // Stats (denormalized)
+  totalStays Int @default(0)
+  totalSpent Int @default(0) // in cents
+  lastStayAt DateTime? @db.Date
+
+  // Preferences
+  preferences Json     @default("{}")
+  tags        String[] @default([])
+
+  // Communication
+  emailOptIn Boolean @default(true)
+  smsOptIn   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  reservations Reservation[]
+  payments     Payment[]
+
+  @@unique([organizationId, email])
+  @@map("guests")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PAYMENT DOMAIN
+// ════════════════════════════════════════════════════════════════════════════
+
+model Payment {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reservationId  String
+  reservation    Reservation @relation(fields: [reservationId], references: [id])
+  guestId        String
+  guest          Guest    @relation(fields: [guestId], references: [id])
+
+  // Amount
+  amount   Int    // in cents
+  currency String
+
+  // Stripe
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+
+  // Status
+  status String // pending, succeeded, failed, refunded
+
+  // Metadata
+  paymentMethod String? // card, bank_transfer
+  cardLast4     String?
+  cardBrand     String?
+
+  // Timestamps
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("payments")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// WEBSITE DOMAIN
+// ════════════════════════════════════════════════════════════════════════════
+
+model Website {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Domain
+  subdomain      String   @unique
+  customDomain   String?  @unique
+  domainVerified Boolean  @default(false)
+
+  // Design
+  template  String @default("luxury") // luxury, minimal, modern
+  theme     Json   @default("{}")     // { primaryColor, font, etc }
+  customCss String? @db.Text
+
+  // Content
+  homepage Json @default("{}") // { hero, sections, etc }
+  pages    Json @default("[]") // Custom pages
+
+  // SEO
+  seo Json @default("{}") // { title, description, og }
+
+  // Analytics
+  googleAnalyticsId String?
+  facebookPixelId   String?
+
+  // Status
+  status      String    @default("draft") // draft, published
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("websites")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EVENT STORE (Audit Trail)
+// ════════════════════════════════════════════════════════════════════════════
+
+model Event {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Event Info
+  type          String // "reservation.created", "property.updated"
+  aggregateType String // "Reservation", "Property"
+  aggregateId   String // The entity ID
+
+  // Payload
+  data     Json
+  metadata Json @default("{}")
+
+  // Actor
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id])
+  apiKeyId String?
+  apiKey   ApiKey? @relation(fields: [apiKeyId], references: [id])
+
+  // Timestamp
+  occurredAt DateTime @default(now())
+
+  @@index([aggregateType, aggregateId])
+  @@index([type])
+  @@index([organizationId, occurredAt])
+  @@map("events")
+}

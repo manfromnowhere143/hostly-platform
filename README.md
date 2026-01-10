@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hostly Platform
+
+> The all-in-one platform for vacation rentals. Build stunning websites, manage bookings, and grow your business.
+
+## Vision
+
+**The Shopify of Vacation Rentals** - Every property owner gets a beautiful website, powerful booking engine, and smart tools to grow their business.
+
+## First Tenant: Rently Luxury
+
+Eilat's premier vacation rental brand, powered by Hostly.
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL (Supabase)
+- **ORM**: Prisma
+- **Cache**: Redis (Upstash)
+- **Payments**: Stripe Connect
+- **Email**: Resend
+- **Styling**: Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Set up environment
+cp .env.example .env.local
+
+# Push database schema
+pnpm db:push
+
+# Generate Prisma client
+pnpm db:generate
+
+# Seed database
+pnpm db:seed
+
+# Start development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API Endpoints
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Authentication
+- `POST /api/v1/auth/register` - Create account + organization
+- `POST /api/v1/auth/login` - Login
+- `POST /api/v1/auth/refresh` - Refresh token
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Properties
+- `GET /api/v1/properties` - List properties
+- `POST /api/v1/properties` - Create property
+- `GET /api/v1/properties/:id` - Get property
+- `PUT /api/v1/properties/:id` - Update property
+- `DELETE /api/v1/properties/:id` - Delete property
+- `POST /api/v1/properties/:id/publish` - Publish property
 
-## Learn More
+### Integrations
+- `POST /api/v1/integrations/boom/sync` - Sync with Boom PMS
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+hostly-platform/
+├── prisma/
+│   ├── schema.prisma    # Database schema (17 tables)
+│   └── seed.ts          # Seed data for Rently
+├── src/
+│   ├── app/
+│   │   ├── api/v1/      # REST API routes
+│   │   └── page.tsx     # Landing page
+│   ├── lib/
+│   │   ├── auth/        # JWT authentication
+│   │   ├── db/          # Prisma client
+│   │   ├── integrations/ # Boom API client
+│   │   ├── services/    # Business logic
+│   │   └── utils/       # API helpers, ID generators
+│   └── types/           # TypeScript definitions
+└── package.json
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture Highlights
 
-## Deploy on Vercel
+- **Multi-tenant from Day 1**: Row-Level Security (RLS) ensures complete data isolation
+- **Event-driven**: All changes logged to event store for audit trail
+- **API-first**: Every feature accessible via REST API
+- **Modular Monolith**: Clean service boundaries, extract when needed
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proprietary - All rights reserved
