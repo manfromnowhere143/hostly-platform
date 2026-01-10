@@ -80,7 +80,7 @@ export interface BoomPricing {
 
 export interface BoomReservation {
   id: string
-  status: string
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'checked_in' | 'checked_out'
   check_in: string
   check_out: string
   guest_name: string
@@ -100,7 +100,55 @@ export interface BoomReservation {
   }
   notes?: string
   confirmation_code?: string
-  source?: string
+  source?: string // airbnb, booking_com, vrbo, direct, hostly_direct
+  channel?: string
+  payout_price?: number
+  host_service_fee?: number
+  commission?: number
+}
+
+export interface BoomReview {
+  id: string
+  reservation_id: string
+  listing_id: number
+  rating: number
+  comment: string
+  guest_name: string
+  created_at: string
+  response?: string
+  responded_at?: string
+  categories?: {
+    cleanliness?: number
+    communication?: number
+    check_in?: number
+    accuracy?: number
+    location?: number
+    value?: number
+  }
+}
+
+export interface BoomCalendarDay {
+  date: string
+  available: boolean
+  price?: number
+  min_nights?: number
+  note?: string
+}
+
+export interface BoomReservationsResponse {
+  reservations: BoomReservation[]
+  pagi_info?: {
+    count: number
+    page: number
+    per_page: number
+    total_pages: number
+  }
+}
+
+export interface BoomReviewsResponse {
+  reviews: BoomReview[]
+  average_rating?: number
+  total_count?: number
 }
 
 interface BoomListingsResponse {
@@ -139,7 +187,7 @@ export class BoomAuthError extends BoomAPIError {
 // CLIENT CLASS
 // ════════════════════════════════════════════════════════════════════════════════
 
-class BoomClient {
+export class BoomClient {
   private accessToken: string | null = null
   private tokenExpiry: Date | null = null
   private isConfigured: boolean
@@ -374,6 +422,268 @@ class BoomClient {
       method: 'POST',
       body: JSON.stringify(payload),
     })
+  }
+
+  /**
+   * Get all reservations with optional filters
+   * This is CRITICAL for analytics - fetches ALL booking history
+   */
+  async getReservations(params?: {
+    from?: string        // Start date (YYYY-MM-DD)
+    to?: string          // End date (YYYY-MM-DD)
+    status?: string      // pending, confirmed, cancelled, completed
+    listing_id?: number  // Filter by specific listing
+    page?: number        // Pagination
+    per_page?: number    // Items per page (max 100)
+  }): Promise<BoomReservationsResponse> {
+    const query = new URLSearchParams()
+    if (params?.from) query.append('from', params.from)
+    if (params?.to) query.append('to', params.to)
+    if (params?.status) query.append('status', params.status)
+    if (params?.listing_id) query.append('listing_id', params.listing_id.toString())
+    if (params?.page) query.append('page', params.page.toString())
+    if (params?.per_page) query.append('per_page', params.per_page.toString())
+
+    const queryString = query.toString()
+    return this.request<BoomReservationsResponse>(
+      `/reservations${queryString ? `?${queryString}` : ''}`
+    )
+  }
+
+  /**
+   * Get a single reservation by ID
+   */
+  async getReservation(reservationId: string): Promise<BoomReservation> {
+    const response = await this.request<{ reservation: BoomReservation }>(
+      `/reservations/${reservationId}`
+    )
+    return response.reservation
+  }
+
+  /**
+   * Cancel a reservation
+   */
+  async cancelReservation(reservationId: string, reason?: string): Promise<void> {
+    await this.request<void>(`/reservations/${reservationId}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // CALENDAR & AVAILABILITY - Push updates to all OTAs via Boom
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Update availability for a listing
+   * This pushes availability changes to ALL connected OTAs (Airbnb, Booking.com, VRBO)
+   */
+  async updateAvailability(
+    listingId: number | string,
+    dates: Array<{
+      date: string       // YYYY-MM-DD
+      available: boolean
+      min_nights?: number
+      note?: string
+    }>
+  ): Promise<{ success: boolean; updated: number }> {
+    const payload = {
+      listing_id: typeof listingId === 'string' ? parseInt(listingId) : listingId,
+      dates: dates.map(d => ({
+        date: d.date,
+        available: d.available,
+        min_nights: d.min_nights,
+        note: d.note,
+      })),
+    }
+
+    return this.request<{ success: boolean; updated: number }>('/calendar/availability', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  /**
+   * Update rates/pricing for a listing
+   * This pushes price changes to ALL connected OTAs
+   */
+  async updateRates(
+    listingId: number | string,
+    rates: Array<{
+      date: string      // YYYY-MM-DD
+      price: number     // Base price for the night
+      currency?: string // Default: listing currency
+    }>
+  ): Promise<{ success: boolean; updated: number }> {
+    const payload = {
+      listing_id: typeof listingId === 'string' ? parseInt(listingId) : listingId,
+      rates: rates.map(r => ({
+        date: r.date,
+        price: r.price,
+        currency: r.currency || 'ILS',
+      })),
+    }
+
+    return this.request<{ success: boolean; updated: number }>('/calendar/rates', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  /**
+   * Get calendar data for a listing
+   * Returns availability and pricing for a date range
+   */
+  async getCalendar(
+    listingId: number | string,
+    from: string,
+    to: string
+  ): Promise<BoomCalendarDay[]> {
+    const params = new URLSearchParams({
+      from,
+      to,
+    })
+
+    const response = await this.request<{ calendar: BoomCalendarDay[] }>(
+      `/listings/${listingId}/calendar?${params.toString()}`
+    )
+    return response.calendar || []
+  }
+
+  /**
+   * Block dates for a listing (owner block, maintenance, etc.)
+   */
+  async blockDates(
+    listingId: number | string,
+    dates: string[],
+    reason?: string
+  ): Promise<{ success: boolean; blocked: number }> {
+    const result = await this.updateAvailability(listingId, dates.map(date => ({
+      date,
+      available: false,
+      note: reason || 'Blocked via Hostly',
+    })))
+    return { success: result.success, blocked: result.updated }
+  }
+
+  /**
+   * Unblock dates for a listing
+   */
+  async unblockDates(
+    listingId: number | string,
+    dates: string[]
+  ): Promise<{ success: boolean; unblocked: number }> {
+    const result = await this.updateAvailability(listingId, dates.map(date => ({
+      date,
+      available: true,
+    })))
+    return { success: result.success, unblocked: result.updated }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // REVIEWS - Guest feedback management
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get reviews for a listing
+   */
+  async getReviews(
+    listingId: number | string,
+    params?: {
+      page?: number
+      per_page?: number
+    }
+  ): Promise<BoomReviewsResponse> {
+    const query = new URLSearchParams()
+    if (params?.page) query.append('page', params.page.toString())
+    if (params?.per_page) query.append('per_page', params.per_page.toString())
+
+    const queryString = query.toString()
+    return this.request<BoomReviewsResponse>(
+      `/listings/${listingId}/reviews${queryString ? `?${queryString}` : ''}`
+    )
+  }
+
+  /**
+   * Reply to a review
+   */
+  async replyToReview(
+    reviewId: string,
+    message: string
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/reviews/${reviewId}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    })
+  }
+
+  /**
+   * Get all reviews across all listings (for dashboard)
+   */
+  async getAllReviews(params?: {
+    from?: string
+    to?: string
+    min_rating?: number
+    responded?: boolean
+    page?: number
+  }): Promise<BoomReviewsResponse> {
+    const query = new URLSearchParams()
+    if (params?.from) query.append('from', params.from)
+    if (params?.to) query.append('to', params.to)
+    if (params?.min_rating) query.append('min_rating', params.min_rating.toString())
+    if (params?.responded !== undefined) query.append('responded', params.responded.toString())
+    if (params?.page) query.append('page', params.page.toString())
+
+    const queryString = query.toString()
+    return this.request<BoomReviewsResponse>(
+      `/reviews${queryString ? `?${queryString}` : ''}`
+    )
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // ANALYTICS - Aggregate data for insights
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Fetch ALL reservations for a date range (handles pagination)
+   * This is the foundation for our analytics engine
+   */
+  async fetchAllReservations(
+    from: string,
+    to: string,
+    options?: { status?: string; listingId?: number }
+  ): Promise<BoomReservation[]> {
+    const allReservations: BoomReservation[] = []
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      const response = await this.getReservations({
+        from,
+        to,
+        status: options?.status,
+        listing_id: options?.listingId,
+        page,
+        per_page: 100,
+      })
+
+      allReservations.push(...response.reservations)
+
+      // Check if there are more pages
+      if (response.pagi_info) {
+        hasMore = page < response.pagi_info.total_pages
+      } else {
+        hasMore = response.reservations.length === 100
+      }
+      page++
+
+      // Rate limiting - don't hammer the API
+      if (hasMore) {
+        await new Promise(r => setTimeout(r, 100))
+      }
+    }
+
+    return allReservations
   }
 
   // ════════════════════════════════════════════════════════════════════════════
