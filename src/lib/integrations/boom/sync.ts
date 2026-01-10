@@ -192,19 +192,12 @@ export class BoomSyncService {
       throw new Error(`Property not found for Boom ID: ${boomRes.property_id}`)
     }
 
-    // Check if reservation already exists
+    // Check if reservation already exists by confirmation code
+    // (Boom confirmation codes are unique identifiers)
     const existing = await prisma.reservation.findFirst({
       where: {
         organizationId: context.organizationId,
-        OR: [
-          { confirmationCode: boomRes.confirmation_code },
-          {
-            metadata: {
-              path: ['boomId'],
-              equals: boomRes.id,
-            },
-          },
-        ],
+        confirmationCode: boomRes.confirmation_code,
       },
     })
 

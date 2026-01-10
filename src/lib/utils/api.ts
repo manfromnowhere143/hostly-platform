@@ -36,7 +36,7 @@ export function handleError(err: unknown): NextResponse {
 
   // Zod validation error
   if (err instanceof ZodError) {
-    const details = err.errors.map((e) => ({
+    const details = err.issues.map((e) => ({
       field: e.path.join('.'),
       message: e.message,
     }))
@@ -45,9 +45,9 @@ export function handleError(err: unknown): NextResponse {
 
   // Auth error
   if (err instanceof Error && err.name === 'AuthError') {
-    const authErr = err as { code: string }
+    const authErr = err as unknown as { code: string; message: string }
     const status = authErr.code === 'AUTH_REQUIRED' ? 401 : 403
-    return error(authErr.code, err.message, undefined, status)
+    return error(authErr.code, authErr.message, undefined, status)
   }
 
   // JWT errors

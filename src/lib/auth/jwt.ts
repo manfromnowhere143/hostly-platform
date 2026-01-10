@@ -7,13 +7,13 @@ const REFRESH_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d'
 
 export function signAccessToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
+    expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   })
 }
 
 export function signRefreshToken(userId: string): string {
   return jwt.sign({ sub: userId, type: 'refresh' }, JWT_SECRET, {
-    expiresIn: REFRESH_EXPIRES_IN,
+    expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   })
 }
 

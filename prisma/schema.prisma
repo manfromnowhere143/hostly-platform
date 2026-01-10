@@ -1,19 +1,23 @@
-// Hostly Platform - Database Schema
-// Multi-tenant property management & booking platform
+// ════════════════════════════════════════════════════════════════════════════════
+// HOSTLY PLATFORM - PostgreSQL Database Schema
+// Production-ready with Supabase, RLS, JSONB, and 50+ performance indexes
+// ════════════════════════════════════════════════════════════════════════════════
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [uuid_ossp(map: "uuid-ossp")]
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // IDENTITY DOMAIN
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Organization {
   id        String   @id @default(cuid())
@@ -21,19 +25,19 @@ model Organization {
   slug      String   @unique
 
   // Subscription
-  plan      String   @default("free") // free, starter, pro, enterprise
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
+  plan                 String  @default("free") // free, starter, pro, enterprise
+  stripeCustomerId     String? @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
 
-  // Settings
-  settings  Json     @default("{}")
-  branding  Json     @default("{}")
+  // Settings (JSONB for better PostgreSQL indexing)
+  settings Json? @db.JsonB
+  branding Json? @db.JsonB
 
   // Status
-  status    String   @default("active") // active, suspended, cancelled
+  status String @default("active") // active, suspended, cancelled
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   users        User[]
@@ -47,111 +51,126 @@ model Organization {
   website      Website?
   events       Event[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([slug])
+  @@index([status])
+  @@index([plan])
+  @@index([createdAt])
   @@map("organizations")
 }
 
 model User {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Profile
   email         String
-  emailVerified Boolean  @default(false)
-  passwordHash  String?
+  emailVerified Boolean  @default(false) @map("email_verified")
+  passwordHash  String?  @map("password_hash")
   name          String?
-  avatarUrl     String?
+  avatarUrl     String?  @map("avatar_url")
   phone         String?
 
   // Role & Access
-  role        String   @default("staff") // owner, admin, staff, viewer
-  permissions String[] @default([])
+  role        String @default("staff") // owner, admin, staff, viewer
+  permissions String @default("")
 
   // Status
-  status      String   @default("active") // active, invited, suspended
-  lastLoginAt DateTime?
+  status      String    @default("active") // active, invited, suspended
+  lastLoginAt DateTime? @map("last_login_at") @db.Timestamptz
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  apiKeys     ApiKey[]
-  events      Event[]
+  apiKeys ApiKey[]
+  events  Event[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
   @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+  @@index([role])
   @@map("users")
 }
 
 model ApiKey {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String?
-  user           User?    @relation(fields: [userId], references: [id])
+  userId         String?      @map("user_id")
+  user           User?        @relation(fields: [userId], references: [id])
 
-  name       String
-  keyHash    String   // SHA-256 hash of the key
-  keyPrefix  String   // First 8 chars for display
+  name      String
+  keyHash   String @map("key_hash") // SHA-256 hash
+  keyPrefix String @map("key_prefix") // First 8 chars for display
 
-  scopes     String[] @default([])
-  rateLimit  Int      @default(1000) // requests per minute
+  scopes    String @default("")
+  rateLimit Int    @default(1000) @map("rate_limit") // requests per minute
 
-  lastUsedAt DateTime?
-  expiresAt  DateTime?
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  events     Event[]
+  events Event[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([organizationId])
+  @@index([userId])
+  @@index([keyPrefix])
+  @@index([expiresAt])
   @@map("api_keys")
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // PROPERTY DOMAIN
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Property {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Basic Info
   name        String
   slug        String
-  type        String   // apartment, villa, hotel_room, house
-  description String?  @db.Text
+  type        String // apartment, villa, hotel_room, house
+  description String?
 
-  // Location
-  address     Json     // { street, city, state, country, zip }
-  coordinates Json?    // { lat, lng }
-  timezone    String   @default("UTC")
+  // Location (JSONB for complex queries)
+  address     Json   @db.JsonB // { street, city, state, country, zip }
+  coordinates Json?  @db.JsonB // { lat, lng }
+  timezone    String @default("UTC")
 
   // Capacity
-  maxGuests   Int
-  bedrooms    Int      @default(0)
-  beds        Int      @default(0)
-  bathrooms   Decimal  @default(0) @db.Decimal(3, 1)
+  maxGuests Int   @map("max_guests")
+  bedrooms  Int   @default(0)
+  beds      Int   @default(0)
+  bathrooms Float @default(0) @db.DoublePrecision
 
-  // Pricing (in cents)
-  basePrice   Int
-  currency    String   @default("USD")
-  cleaningFee Int      @default(0)
+  // Pricing (in cents for precision)
+  basePrice   Int    @map("base_price")
+  currency    String @default("USD")
+  cleaningFee Int    @default(0) @map("cleaning_fee")
 
   // Rules
-  checkInTime  String   @default("15:00")
-  checkOutTime String   @default("11:00")
-  minNights    Int      @default(1)
-  maxNights    Int      @default(365)
+  checkInTime  String @default("15:00") @map("check_in_time")
+  checkOutTime String @default("11:00") @map("check_out_time")
+  minNights    Int    @default(1) @map("min_nights")
+  maxNights    Int    @default(365) @map("max_nights")
 
   // Status
-  status      String   @default("draft") // draft, active, inactive
-  publishedAt DateTime?
+  status      String    @default("draft") // draft, active, inactive
+  publishedAt DateTime? @map("published_at") @db.Timestamptz
 
-  // Metadata
-  metadata    Json     @default("{}")
+  // Metadata (JSONB for flexible data)
+  metadata Json? @db.JsonB
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   photos       PropertyPhoto[]
@@ -160,25 +179,40 @@ model Property {
   calendar     CalendarDay[]
   quotes       Quote[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
   @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, status, type])
+  @@index([status])
+  @@index([type])
+  @@index([basePrice])
+  @@index([maxGuests])
+  @@index([bedrooms])
+  @@index([publishedAt])
   @@map("properties")
 }
 
 model PropertyPhoto {
   id             String   @id @default(cuid())
-  propertyId     String
+  propertyId     String   @map("property_id")
   property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  organizationId String
+  organizationId String   @map("organization_id")
 
   url          String
-  thumbnailUrl String?
+  thumbnailUrl String? @map("thumbnail_url")
   caption      String?
-  altText      String?
-  sortOrder    Int      @default(0)
-  isPrimary    Boolean  @default(false)
+  altText      String? @map("alt_text")
+  sortOrder    Int     @default(0) @map("sort_order")
+  isPrimary    Boolean @default(false) @map("is_primary")
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([propertyId])
+  @@index([organizationId])
+  @@index([propertyId, sortOrder])
+  @@index([propertyId, isPrimary])
   @@map("property_photos")
 }
 
@@ -190,39 +224,43 @@ model Amenity {
 
   properties PropertyAmenity[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([category])
   @@map("amenities")
 }
 
 model PropertyAmenity {
-  propertyId     String
+  propertyId     String   @map("property_id")
   property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  amenityId      String
+  amenityId      String   @map("amenity_id")
   amenity        Amenity  @relation(fields: [amenityId], references: [id])
-  organizationId String
+  organizationId String   @map("organization_id")
 
   @@id([propertyId, amenityId])
+  @@index([organizationId])
+  @@index([amenityId])
   @@map("property_amenities")
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // BOOKING DOMAIN
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Reservation {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  propertyId     String
-  property       Property @relation(fields: [propertyId], references: [id])
-  guestId        String
-  guest          Guest    @relation(fields: [guestId], references: [id])
+  propertyId     String       @map("property_id")
+  property       Property     @relation(fields: [propertyId], references: [id])
+  guestId        String       @map("guest_id")
+  guest          Guest        @relation(fields: [guestId], references: [id])
 
   // Confirmation
-  confirmationCode String @unique
+  confirmationCode String @unique @map("confirmation_code")
 
-  // Dates
-  checkIn  DateTime @db.Date
-  checkOut DateTime @db.Date
+  // Dates (Timestamptz for timezone awareness)
+  checkIn  DateTime @map("check_in") @db.Timestamptz
+  checkOut DateTime @map("check_out") @db.Timestamptz
 
   // Guests
   adults   Int @default(1)
@@ -231,105 +269,138 @@ model Reservation {
 
   // Pricing (all in cents)
   currency      String
-  accommodation Int    // nightly rates total
-  cleaningFee   Int    @default(0)
-  serviceFee    Int    @default(0)
+  accommodation Int
+  cleaningFee   Int    @default(0) @map("cleaning_fee")
+  serviceFee    Int    @default(0) @map("service_fee")
   taxes         Int    @default(0)
   discounts     Int    @default(0)
   total         Int
 
   // Payment
-  paymentStatus String @default("pending") // pending, partial, paid, refunded
-  amountPaid    Int    @default(0)
+  paymentStatus String @default("pending") @map("payment_status") // pending, partial, paid, refunded
+  amountPaid    Int    @default(0) @map("amount_paid")
 
   // Status
   status String @default("pending") // pending, confirmed, cancelled, completed
-  source String @default("direct")  // direct, airbnb, booking, vrbo, boom
+  source String @default("direct") // direct, airbnb, booking, vrbo, boom
 
   // Notes
-  guestNotes    String? @db.Text
-  internalNotes String? @db.Text
+  guestNotes    String? @map("guest_notes")
+  internalNotes String? @map("internal_notes")
 
   // Timestamps
-  bookedAt    DateTime  @default(now())
-  confirmedAt DateTime?
-  cancelledAt DateTime?
+  bookedAt    DateTime  @default(now()) @map("booked_at") @db.Timestamptz
+  confirmedAt DateTime? @map("confirmed_at") @db.Timestamptz
+  cancelledAt DateTime? @map("cancelled_at") @db.Timestamptz
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   payments Payment[]
   calendar CalendarDay[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([organizationId])
+  @@index([propertyId])
+  @@index([guestId])
+  @@index([confirmationCode])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([source])
+  @@index([checkIn])
+  @@index([checkOut])
+  @@index([checkIn, checkOut])
+  @@index([propertyId, checkIn, checkOut])
+  @@index([organizationId, status])
+  @@index([organizationId, checkIn])
+  @@index([propertyId, status])
+  @@index([bookedAt])
   @@map("reservations")
 }
 
 model CalendarDay {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  propertyId     String
-  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId     String       @map("property_id")
+  property       Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   date DateTime @db.Date
 
   // Availability
-  status        String  @default("available") // available, booked, blocked
-  reservationId String?
+  status        String       @default("available") // available, booked, blocked
+  reservationId String?      @map("reservation_id")
   reservation   Reservation? @relation(fields: [reservationId], references: [id])
 
   // Pricing override
   price     Int? // null = use base price
-  minNights Int? // null = use property default
+  minNights Int? @map("min_nights") // null = use property default
 
   // Metadata
-  blockReason String? // "Owner stay", "Maintenance"
+  blockReason String? @map("block_reason") // "Owner stay", "Maintenance"
 
+  // ─── Indexes (Critical for availability queries) ─────────────────────────────
   @@unique([propertyId, date])
+  @@index([organizationId])
+  @@index([propertyId])
+  @@index([date])
+  @@index([status])
+  @@index([reservationId])
+  @@index([propertyId, date])
+  @@index([propertyId, status])
+  @@index([propertyId, date, status])
+  @@index([organizationId, date])
   @@map("calendar")
 }
 
 model Quote {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  propertyId     String
-  property       Property @relation(fields: [propertyId], references: [id])
+  propertyId     String       @map("property_id")
+  property       Property     @relation(fields: [propertyId], references: [id])
 
   // Request
-  checkIn  DateTime @db.Date
-  checkOut DateTime @db.Date
+  checkIn  DateTime @map("check_in") @db.Timestamptz
+  checkOut DateTime @map("check_out") @db.Timestamptz
   adults   Int
-  children Int @default(0)
+  children Int      @default(0)
 
-  // Pricing Breakdown
+  // Pricing Breakdown (JSONB)
   currency      String
-  nightlyRates  Json   // [{ date, price }]
+  nightlyRates  Json   @map("nightly_rates") @db.JsonB // [{ date, price }]
   accommodation Int
-  cleaningFee   Int    @default(0)
-  serviceFee    Int    @default(0)
+  cleaningFee   Int    @default(0) @map("cleaning_fee")
+  serviceFee    Int    @default(0) @map("service_fee")
   taxes         Int    @default(0)
-  discounts     Json   @default("[]") // [{ type, amount }]
+  discounts     Json?  @db.JsonB // [{ type, amount }]
   total         Int
 
   // Status
   status      String   @default("active") // active, expired, converted
-  expiresAt   DateTime
-  convertedTo String?  // reservation id
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz
+  convertedTo String?  @map("converted_to") // reservation id
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([organizationId])
+  @@index([propertyId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([convertedTo])
+  @@index([organizationId, status])
   @@map("quotes")
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // GUEST DOMAIN
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Guest {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Contact
@@ -337,141 +408,166 @@ model Guest {
   phone String?
 
   // Profile
-  firstName String
-  lastName  String
+  firstName String @map("first_name")
+  lastName  String @map("last_name")
 
-  // Address
-  address Json?
+  // Address (JSONB)
+  address Json? @db.JsonB
 
-  // Stats (denormalized)
-  totalStays Int @default(0)
-  totalSpent Int @default(0) // in cents
-  lastStayAt DateTime? @db.Date
+  // Stats (denormalized for performance)
+  totalStays Int       @default(0) @map("total_stays")
+  totalSpent Int       @default(0) @map("total_spent") // in cents
+  lastStayAt DateTime? @map("last_stay_at") @db.Timestamptz
 
-  // Preferences
-  preferences Json     @default("{}")
-  tags        String[] @default([])
+  // Preferences (JSONB)
+  preferences Json?  @db.JsonB
+  tags        String @default("")
 
   // Communication
-  emailOptIn Boolean @default(true)
-  smsOptIn   Boolean @default(false)
+  emailOptIn Boolean @default(true) @map("email_opt_in")
+  smsOptIn   Boolean @default(false) @map("sms_opt_in")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   reservations Reservation[]
   payments     Payment[]
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
   @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@index([firstName, lastName])
+  @@index([totalStays])
+  @@index([totalSpent])
+  @@index([lastStayAt])
   @@map("guests")
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // PAYMENT DOMAIN
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Payment {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  reservationId  String
-  reservation    Reservation @relation(fields: [reservationId], references: [id])
-  guestId        String
-  guest          Guest    @relation(fields: [guestId], references: [id])
+  reservationId  String       @map("reservation_id")
+  reservation    Reservation  @relation(fields: [reservationId], references: [id])
+  guestId        String       @map("guest_id")
+  guest          Guest        @relation(fields: [guestId], references: [id])
 
   // Amount
-  amount   Int    // in cents
+  amount   Int // in cents
   currency String
 
   // Stripe
-  stripePaymentIntentId String?
-  stripeChargeId        String?
+  stripePaymentIntentId String? @map("stripe_payment_intent_id")
+  stripeChargeId        String? @map("stripe_charge_id")
 
   // Status
   status String // pending, succeeded, failed, refunded
 
   // Metadata
-  paymentMethod String? // card, bank_transfer
-  cardLast4     String?
-  cardBrand     String?
+  paymentMethod String? @map("payment_method") // card, bank_transfer
+  cardLast4     String? @map("card_last4")
+  cardBrand     String? @map("card_brand")
 
   // Timestamps
-  processedAt DateTime?
-  createdAt   DateTime  @default(now())
+  processedAt DateTime? @map("processed_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([organizationId])
+  @@index([reservationId])
+  @@index([guestId])
+  @@index([stripePaymentIntentId])
+  @@index([stripeChargeId])
+  @@index([status])
+  @@index([processedAt])
+  @@index([organizationId, status])
   @@map("payments")
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // WEBSITE DOMAIN
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Website {
-  id             String   @id @default(cuid())
-  organizationId String   @unique
+  id             String       @id @default(cuid())
+  organizationId String       @unique @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Domain
   subdomain      String   @unique
-  customDomain   String?  @unique
-  domainVerified Boolean  @default(false)
+  customDomain   String?  @unique @map("custom_domain")
+  domainVerified Boolean  @default(false) @map("domain_verified")
 
-  // Design
+  // Design (JSONB)
   template  String @default("luxury") // luxury, minimal, modern
-  theme     Json   @default("{}")     // { primaryColor, font, etc }
-  customCss String? @db.Text
+  theme     Json?  @db.JsonB // { primaryColor, font, etc }
+  customCss String? @map("custom_css")
 
-  // Content
-  homepage Json @default("{}") // { hero, sections, etc }
-  pages    Json @default("[]") // Custom pages
+  // Content (JSONB)
+  homepage Json? @db.JsonB // { hero, sections, etc }
+  pages    Json? @db.JsonB // Custom pages
 
-  // SEO
-  seo Json @default("{}") // { title, description, og }
+  // SEO (JSONB)
+  seo Json? @db.JsonB // { title, description, og }
 
   // Analytics
-  googleAnalyticsId String?
-  facebookPixelId   String?
+  googleAnalyticsId String? @map("google_analytics_id")
+  facebookPixelId   String? @map("facebook_pixel_id")
 
   // Status
   status      String    @default("draft") // draft, published
-  publishedAt DateTime?
+  publishedAt DateTime? @map("published_at") @db.Timestamptz
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([subdomain])
+  @@index([customDomain])
+  @@index([status])
   @@map("websites")
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 // EVENT STORE (Audit Trail)
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
 
 model Event {
-  id             String   @id @default(cuid())
-  organizationId String
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Event Info
   type          String // "reservation.created", "property.updated"
-  aggregateType String // "Reservation", "Property"
-  aggregateId   String // The entity ID
+  aggregateType String @map("aggregate_type") // "Reservation", "Property"
+  aggregateId   String @map("aggregate_id") // The entity ID
 
-  // Payload
-  data     Json
-  metadata Json @default("{}")
+  // Payload (JSONB)
+  data     Json  @db.JsonB
+  metadata Json? @db.JsonB
 
   // Actor
-  userId   String?
+  userId   String? @map("user_id")
   user     User?   @relation(fields: [userId], references: [id])
-  apiKeyId String?
+  apiKeyId String? @map("api_key_id")
   apiKey   ApiKey? @relation(fields: [apiKeyId], references: [id])
 
   // Timestamp
-  occurredAt DateTime @default(now())
+  occurredAt DateTime @default(now()) @map("occurred_at") @db.Timestamptz
 
+  // ─── Indexes ─────────────────────────────────────────────────────────────────
+  @@index([organizationId])
   @@index([aggregateType, aggregateId])
   @@index([type])
   @@index([organizationId, occurredAt])
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([occurredAt])
   @@map("events")
 }

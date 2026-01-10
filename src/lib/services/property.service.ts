@@ -207,14 +207,17 @@ export class PropertyService {
     }
 
     await prisma.$transaction(async (tx) => {
+      // Exclude amenities from the spread since we handle it separately
+      const { amenities, ...propertyData } = data
+
       // Update property
       await tx.property.update({
         where: { id: propertyId },
         data: {
-          ...data,
+          ...propertyData,
           slug,
-          address: data.address ?? undefined,
-          coordinates: data.coordinates ?? undefined,
+          address: propertyData.address ?? undefined,
+          coordinates: propertyData.coordinates ?? undefined,
         },
       })
 
