@@ -13,6 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { calendarSyncService } from '@/lib/services/calendar-sync.service'
 import prisma from '@/lib/db/client'
 
@@ -35,11 +36,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get overall sync statistics
+    // Count properties that have a boomId in their metadata
     const mappedProperties = await prisma.property.count({
       where: {
         metadata: {
           path: ['boomId'],
-          not: null,
+          not: Prisma.DbNull,
         },
       },
     })
@@ -66,13 +68,13 @@ export async function GET(request: NextRequest) {
       where: {
         type: { startsWith: 'calendar.sync' },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { occurredAt: 'desc' },
       take: 10,
       select: {
         type: true,
         aggregateId: true,
         data: true,
-        createdAt: true,
+        occurredAt: true,
       },
     })
 
@@ -89,7 +91,7 @@ export async function GET(request: NextRequest) {
           type: e.type,
           propertyId: e.aggregateId,
           data: e.data,
-          timestamp: e.createdAt,
+          timestamp: e.occurredAt,
         })),
       },
     })

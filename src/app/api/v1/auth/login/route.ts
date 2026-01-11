@@ -43,13 +43,18 @@ export async function POST(request: NextRequest) {
       data: { lastLoginAt: new Date() },
     })
 
+    // Parse permissions string to array
+    const permissions = user.permissions
+      ? user.permissions.split(',').map((p) => p.trim()).filter(Boolean)
+      : []
+
     // Generate tokens
     const accessToken = signAccessToken({
       sub: user.id,
       org: user.organizationId,
       slug: user.organization.slug,
       role: user.role,
-      permissions: user.permissions,
+      permissions,
     })
     const refreshToken = signRefreshToken(user.id)
 

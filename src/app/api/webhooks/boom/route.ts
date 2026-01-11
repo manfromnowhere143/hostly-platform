@@ -197,7 +197,6 @@ async function handleNewReservation(
         lastName,
         email: data.guest_email || `${data.id}@boom-import.local`,
         phone: data.guest_phone,
-        source: `boom_${data.source}`,
       },
     })
   }
@@ -221,6 +220,7 @@ async function handleNewReservation(
   const confirmationCode = `BOOM-${data.confirmation_code || data.id.slice(-6).toUpperCase()}`
 
   // Create the reservation
+  const totalCents = Math.round((data.total_price || 0) * 100)
   const reservation = await prisma.reservation.create({
     data: {
       id: `res_boom_${Date.now()}`,
@@ -234,7 +234,8 @@ async function handleNewReservation(
       adults: data.guest_count || 1,
       children: 0,
       infants: 0,
-      totalAmount: Math.round((data.total_price || 0) * 100),
+      accommodation: totalCents, // Boom imports: full amount as accommodation
+      total: totalCents,
       currency: data.currency || 'ILS',
       paymentStatus: 'paid', // Assume paid if coming from OTA
       source: `boom_${data.source}`,
@@ -286,7 +287,7 @@ async function handleNewReservation(
 }
 
 async function handleUpdatedReservation(
-  property: { id: string; organizationId: string },
+  property: { id: string; organizationId: string; name: string },
   data: BoomWebhookPayload['data']
 ) {
   console.log('[Boom Webhook] Processing reservation update')
@@ -323,13 +324,15 @@ async function handleUpdatedReservation(
     })
 
     // Update reservation
+    const totalCents = Math.round((data.total_price || 0) * 100)
     await prisma.reservation.update({
       where: { id: reservation.id },
       data: {
         checkIn: newCheckIn,
         checkOut: newCheckOut,
         adults: data.guest_count || reservation.adults,
-        totalAmount: Math.round((data.total_price || 0) * 100),
+        accommodation: totalCents,
+        total: totalCents,
       },
     })
 
@@ -391,8 +394,8 @@ async function handleCanceledReservation(
   await prisma.reservation.update({
     where: { id: reservation.id },
     data: {
-      status: 'canceled',
-      canceledAt: new Date(),
+      status: 'cancelled',
+      cancelledAt: new Date(),
     },
   })
 

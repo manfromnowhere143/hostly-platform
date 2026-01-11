@@ -50,7 +50,6 @@ function createPrismaClient(): PrismaClient {
 
   // ─── Query Event Logging ─────────────────────────────────────────────────────
 
-  // @ts-expect-error - Prisma types don't fully support event subscriptions
   client.$on('query', (e: Prisma.QueryEvent) => {
     const duration = e.duration
 
@@ -66,12 +65,10 @@ function createPrismaClient(): PrismaClient {
     }
   })
 
-  // @ts-expect-error - Prisma types don't fully support event subscriptions
   client.$on('error', (e: Prisma.LogEvent) => {
     console.error('[DB Error]', e.message)
   })
 
-  // @ts-expect-error - Prisma types don't fully support event subscriptions
   client.$on('warn', (e: Prisma.LogEvent) => {
     console.warn('[DB Warning]', e.message)
   })

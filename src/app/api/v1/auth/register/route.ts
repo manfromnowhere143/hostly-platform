@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
           passwordHash,
           name: data.name,
           role: 'owner',
-          permissions: ['*'], // Owners have all permissions
+          permissions: '*', // Owners have all permissions (stored as comma-separated string)
         },
       })
 
@@ -86,13 +86,18 @@ export async function POST(request: NextRequest) {
       return { organization, user }
     })
 
+    // Parse permissions string to array
+    const permissions = result.user.permissions
+      ? result.user.permissions.split(',').map((p) => p.trim()).filter(Boolean)
+      : []
+
     // Generate tokens
     const accessToken = signAccessToken({
       sub: result.user.id,
       org: result.organization.id,
       slug: result.organization.slug,
       role: result.user.role,
-      permissions: result.user.permissions,
+      permissions,
     })
     const refreshToken = signRefreshToken(result.user.id)
 

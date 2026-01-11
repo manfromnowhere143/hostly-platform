@@ -1,0 +1,150 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# HOSTLY PLATFORM - DOCKER COMPOSE
+# ═══════════════════════════════════════════════════════════════════════════════
+# Local development and testing environment
+# Production: Use managed services (Supabase, Upstash, etc.)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Hostly Web Application
+  # ─────────────────────────────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_APP_URL=http://localhost:3000
+        - NEXT_PUBLIC_API_URL=http://localhost:3000/api
+    container_name: hostly-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+
+      # Database (local PostgreSQL)
+      - DATABASE_URL=postgresql://hostly:hostly_secret@postgres:5432/hostly?schema=public
+      - DIRECT_URL=postgresql://hostly:hostly_secret@postgres:5432/hostly?schema=public
+
+      # Authentication
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-min-32-characters-long}
+      - JWT_EXPIRES_IN=15m
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+
+      # Redis (local)
+      - UPSTASH_REDIS_REST_URL=http://redis:6379
+      # Note: Local Redis doesn't use REST API, this is for reference
+
+      # Stripe (use test keys)
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+
+      # Boom PMS
+      - BOOM_CLIENT_ID=${BOOM_CLIENT_ID}
+      - BOOM_CLIENT_SECRET=${BOOM_CLIENT_SECRET}
+      - BOOM_API_URL=https://app.boomnow.com/open_api/v1
+
+      # Email (optional for local)
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - EMAIL_FROM=Hostly <noreply@localhost>
+
+      # Feature Flags
+      - FEATURE_BOOM_SYNC=true
+      - FEATURE_STRIPE_PAYMENTS=true
+      - FEATURE_EMAIL_NOTIFICATIONS=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health/db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - hostly-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: hostly-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=hostly
+      - POSTGRES_PASSWORD=hostly_secret
+      - POSTGRES_DB=hostly
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hostly -d hostly"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hostly-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Redis Cache
+  # ─────────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: hostly-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hostly-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Database Migrations (one-time job)
+  # ─────────────────────────────────────────────────────────────────────────────
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: hostly-migrate
+    environment:
+      - DATABASE_URL=postgresql://hostly:hostly_secret@postgres:5432/hostly?schema=public
+    command: npx prisma migrate deploy
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hostly-network
+    profiles:
+      - migrate
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Volumes
+# ─────────────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  hostly-network:
+    driver: bridge

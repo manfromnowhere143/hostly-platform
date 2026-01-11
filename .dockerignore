@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# HOSTLY PLATFORM - DOCKER IGNORE
+# ═══════════════════════════════════════════════════════════════════════════════
+# Excludes files from Docker build context for faster builds and smaller images
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Git ───────────────────────────────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ─── Dependencies (will be installed fresh in Docker) ─────────────────────────
+node_modules
+.pnpm-store
+
+# ─── Build artifacts ───────────────────────────────────────────────────────────
+.next
+out
+build
+dist
+*.tsbuildinfo
+
+# ─── Environment files (secrets should come from environment) ─────────────────
+.env
+.env.*
+!.env.example
+
+# ─── IDE and editor files ──────────────────────────────────────────────────────
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# ─── OS files ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── Test files ────────────────────────────────────────────────────────────────
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+coverage
+.nyc_output
+
+# ─── Documentation ─────────────────────────────────────────────────────────────
+*.md
+!README.md
+docs
+LICENSE
+
+# ─── Docker files (don't need to copy themselves) ─────────────────────────────
+Dockerfile*
+docker-compose*.yml
+.docker
+
+# ─── CI/CD ─────────────────────────────────────────────────────────────────────
+.github
+.gitlab-ci.yml
+.travis.yml
+.circleci
+Jenkinsfile
+
+# ─── Misc ──────────────────────────────────────────────────────────────────────
+*.local
+.turbo
+.vercel
+.netlify
+
+# ─── Scripts (utility scripts not needed at runtime) ──────────────────────────
+scripts/*.ts
+!scripts/seed.ts
+
+# ─── Prisma (schema is needed, but not migrations in runtime) ─────────────────
+# Note: prisma/schema.prisma IS needed for prisma generate
+# prisma/migrations are only needed if running migrations in container

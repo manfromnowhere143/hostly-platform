@@ -31,13 +31,18 @@ export async function POST(request: NextRequest) {
       return error('AUTH_INVALID', 'Organization is not active', undefined, 401)
     }
 
+    // Parse permissions string to array
+    const permissions = user.permissions
+      ? user.permissions.split(',').map((p) => p.trim()).filter(Boolean)
+      : []
+
     // Generate new tokens
     const newAccessToken = signAccessToken({
       sub: user.id,
       org: user.organizationId,
       slug: user.organization.slug,
       role: user.role,
-      permissions: user.permissions,
+      permissions,
     })
     const newRefreshToken = signRefreshToken(user.id)
 

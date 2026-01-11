@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { boomSyncService } from '@/lib/services/boom-sync.service'
 import { boomClient } from '@/lib/integrations/boom/client'
 import prisma from '@/lib/db/client'
@@ -26,7 +27,7 @@ export async function GET() {
           startsWith: 'boom.',
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { occurredAt: 'desc' },
       take: 10,
     })
 
@@ -42,7 +43,7 @@ export async function GET() {
         property: {
           metadata: {
             path: ['boomId'],
-            not: null,
+            not: Prisma.DbNull,
           },
         },
       },
@@ -71,7 +72,7 @@ export async function GET() {
       },
       recentEvents: recentEvents.map(e => ({
         type: e.type,
-        timestamp: e.createdAt,
+        timestamp: e.occurredAt,
         data: e.data,
       })),
       unsyncedReservations: unsyncedReservations.map(r => ({
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
             property: {
               metadata: {
                 path: ['boomId'],
-                not: null,
+                not: Prisma.DbNull,
               },
             },
           },

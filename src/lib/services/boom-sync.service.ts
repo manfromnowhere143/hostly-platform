@@ -16,6 +16,7 @@
  * - Can be imported into any OTA calendar settings
  */
 
+import { Prisma } from '@prisma/client'
 import { boomClient, BoomAPIError } from '@/lib/integrations/boom/client'
 import prisma from '@/lib/db/client'
 
@@ -223,7 +224,7 @@ export class BoomSyncService {
       where: {
         metadata: {
           path: ['boomId'],
-          not: null,
+          not: Prisma.DbNull,
         },
       },
     })

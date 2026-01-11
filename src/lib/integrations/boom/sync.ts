@@ -8,9 +8,10 @@
  * - Push rate updates to Boom
  */
 
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/db/client'
 import { ids, generateConfirmationCode } from '@/lib/utils/id'
-import { boomClient, BoomProperty, BoomReservation } from './client'
+import { boomClient, BoomListing, BoomReservation } from './client'
 import { TenantContext } from '@/types'
 
 export class BoomSyncService {
@@ -29,14 +30,14 @@ export class BoomSyncService {
     const result = { imported: 0, updated: 0, errors: [] as string[] }
 
     try {
-      const boomProperties = await boomClient.getProperties()
+      const boomProperties = await boomClient.getListings()
 
       for (const boomProp of boomProperties) {
         try {
           await this.importProperty(context, boomProp)
           result.imported++
         } catch (err) {
-          result.errors.push(`${boomProp.name}: ${(err as Error).message}`)
+          result.errors.push(`${boomProp.title}: ${(err as Error).message}`)
         }
       }
     } catch (err) {
@@ -48,7 +49,7 @@ export class BoomSyncService {
 
   private async importProperty(
     context: TenantContext,
-    boomProp: BoomProperty
+    boomProp: BoomListing
   ) {
     // Check if property already exists (by external ID in metadata)
     const existing = await prisma.property.findFirst({
@@ -61,26 +62,29 @@ export class BoomSyncService {
       },
     })
 
-    // Generate slug
-    const slug = boomProp.name
+    // Generate slug from title
+    const slug = boomProp.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
 
+    // Map BoomListing fields to Property fields
     const propertyData = {
-      name: boomProp.name,
+      name: boomProp.title,
       slug: existing?.slug ?? slug,
-      type: this.mapPropertyType(boomProp.type),
-      description: boomProp.description,
-      address: boomProp.address,
-      maxGuests: boomProp.max_guests,
-      bedrooms: boomProp.bedrooms,
-      bathrooms: boomProp.bathrooms,
-      basePrice: Math.round(boomProp.base_rate * 100), // Convert to cents
-      currency: boomProp.currency,
-      status: boomProp.status === 'active' ? 'active' : 'draft',
+      type: 'apartment' as const, // Default type for Boom imports
+      description: boomProp.marketing_content?.description || '',
+      address: boomProp.address ? boomProp.address : Prisma.JsonNull,
+      maxGuests: boomProp.accommodates,
+      bedrooms: boomProp.beds,
+      bathrooms: boomProp.baths,
+      basePrice: 0, // Will be updated from calendar/rates
+      currency: 'ILS', // Default currency
+      status: 'active' as const,
       metadata: {
         boomId: boomProp.id,
+        city: boomProp.city_name,
+        amenities: boomProp.amenities,
         lastSyncedAt: new Date().toISOString(),
       },
     }
@@ -102,33 +106,21 @@ export class BoomSyncService {
         },
       })
 
-      // Import photos
-      if (boomProp.images?.length) {
+      // Import photos from pictures array
+      if (boomProp.pictures?.length) {
         await prisma.propertyPhoto.createMany({
-          data: boomProp.images.map((img, index) => ({
+          data: boomProp.pictures.map((pic, index) => ({
             id: ids.photo(),
             propertyId,
             organizationId: context.organizationId,
-            url: img.url,
-            caption: img.caption,
+            url: pic.picture,
+            caption: pic.nickname || null,
             sortOrder: index,
             isPrimary: index === 0,
           })),
         })
       }
     }
-  }
-
-  private mapPropertyType(boomType: string): string {
-    const typeMap: Record<string, string> = {
-      apartment: 'apartment',
-      condo: 'apartment',
-      villa: 'villa',
-      house: 'house',
-      hotel_room: 'hotel_room',
-      room: 'hotel_room',
-    }
-    return typeMap[boomType.toLowerCase()] ?? 'apartment'
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -150,9 +142,9 @@ export class BoomSyncService {
     const result = { imported: 0, updated: 0, errors: [] as string[] }
 
     try {
-      const boomReservations = await boomClient.getReservations({ from, to })
+      const response = await boomClient.getReservations({ from, to })
 
-      for (const boomRes of boomReservations) {
+      for (const boomRes of response.reservations) {
         try {
           const isNew = await this.importReservation(context, boomRes)
           if (isNew) {
@@ -177,35 +169,45 @@ export class BoomSyncService {
     context: TenantContext,
     boomRes: BoomReservation
   ): Promise<boolean> {
-    // Find the property by Boom ID
+    // Find the property by Boom listing ID
     const property = await prisma.property.findFirst({
       where: {
         organizationId: context.organizationId,
         metadata: {
           path: ['boomId'],
-          equals: boomRes.property_id,
+          equals: boomRes.listing.id,
         },
       },
     })
 
     if (!property) {
-      throw new Error(`Property not found for Boom ID: ${boomRes.property_id}`)
+      throw new Error(`Property not found for Boom listing: ${boomRes.listing.id}`)
     }
 
+    // Generate confirmation code if not provided
+    const confirmationCode = boomRes.confirmation_code || `BOOM-${boomRes.id.slice(-8).toUpperCase()}`
+
     // Check if reservation already exists by confirmation code
-    // (Boom confirmation codes are unique identifiers)
     const existing = await prisma.reservation.findFirst({
       where: {
         organizationId: context.organizationId,
-        confirmationCode: boomRes.confirmation_code,
+        confirmationCode,
       },
     })
+
+    // Parse guest name
+    const guestName = boomRes.guest?.name || boomRes.guest_name || 'Guest'
+    const nameParts = guestName.split(' ')
+    const firstName = nameParts[0] || 'Guest'
+    const lastName = nameParts.slice(1).join(' ') || ''
+    const guestEmail = boomRes.guest?.email || `${boomRes.id}@boom-import.local`
+    const guestPhone = boomRes.guest?.phone || null
 
     // Find or create guest
     let guest = await prisma.guest.findFirst({
       where: {
         organizationId: context.organizationId,
-        email: boomRes.guest.email,
+        email: guestEmail,
       },
     })
 
@@ -214,31 +216,34 @@ export class BoomSyncService {
         data: {
           id: ids.guest(),
           organizationId: context.organizationId,
-          email: boomRes.guest.email,
-          firstName: boomRes.guest.first_name,
-          lastName: boomRes.guest.last_name,
-          phone: boomRes.guest.phone,
+          email: guestEmail,
+          firstName,
+          lastName,
+          phone: guestPhone,
         },
       })
     }
 
+    // Calculate pricing (convert to cents)
+    const totalCents = Math.round((boomRes.total_price || 0) * 100)
+
     const reservationData = {
       propertyId: property.id,
       guestId: guest.id,
-      confirmationCode: boomRes.confirmation_code,
+      confirmationCode,
       checkIn: new Date(boomRes.check_in),
       checkOut: new Date(boomRes.check_out),
-      adults: boomRes.guests.adults,
-      children: boomRes.guests.children,
-      infants: boomRes.guests.infants,
-      currency: boomRes.pricing.currency,
-      accommodation: Math.round(boomRes.pricing.accommodation * 100),
-      cleaningFee: Math.round(boomRes.pricing.cleaning * 100),
-      serviceFee: Math.round(boomRes.pricing.fees * 100),
-      taxes: Math.round(boomRes.pricing.taxes * 100),
-      total: Math.round(boomRes.pricing.total * 100),
+      adults: boomRes.guest_count || 1,
+      children: 0,
+      infants: 0,
+      currency: boomRes.currency || 'ILS',
+      accommodation: totalCents, // Full amount as accommodation
+      cleaningFee: 0,
+      serviceFee: 0,
+      taxes: 0,
+      total: totalCents,
       status: this.mapReservationStatus(boomRes.status),
-      source: 'boom',
+      source: `boom_${boomRes.source || 'unknown'}`,
     }
 
     if (existing) {

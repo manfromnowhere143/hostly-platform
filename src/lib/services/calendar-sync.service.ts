@@ -460,11 +460,11 @@ export class CalendarSyncService {
         aggregateId: propertyId,
         type: { startsWith: 'calendar.sync' },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { occurredAt: 'desc' },
     })
 
     return {
-      lastSync: lastSyncEvent?.createdAt || null,
+      lastSync: lastSyncEvent?.occurredAt || null,
       blockedDays,
       bookedDays,
       availableDays,
