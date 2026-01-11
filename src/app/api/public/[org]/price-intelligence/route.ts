@@ -280,26 +280,52 @@ function findDateAlternatives(
     })
   }
 
-  // Sort by savings (best first)
-  alternatives.sort((a, b) => b.savings - a.savings)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CRITICAL: Filter for FULLY AVAILABLE alternatives FIRST
+  // Only suggest dates where ALL nights are actually bookable
+  // ═══════════════════════════════════════════════════════════════════════════
+  const fullyAvailable = alternatives.filter(a => {
+    if (a.availability !== 'full') {
+      // Debug: Log which alternatives are being filtered out
+      console.log(`[Price Intelligence] Filtered out ${a.checkIn} - ${a.checkOut}: availability=${a.availability}`)
+      return false
+    }
+    return true
+  })
+
+  // Sort by savings (best first), then by earliest check-in date
+  fullyAvailable.sort((a, b) => {
+    if (b.savings !== a.savings) return b.savings - a.savings
+    return a.checkIn.localeCompare(b.checkIn) // Earlier date wins
+  })
+
+  // Deduplicate alternatives with identical total prices
+  // Keep only the first (best) one for each unique price point
+  const seenPrices = new Set<number>()
+  const deduplicated = fullyAvailable.filter(alt => {
+    if (seenPrices.has(alt.totalPrice)) {
+      return false // Skip duplicate price
+    }
+    seenPrices.add(alt.totalPrice)
+    return true
+  })
 
   // Assign badges
-  const available = alternatives.filter(a => a.availability === 'full')
-  if (available.length > 0) {
-    // Best value = most savings that's fully available
-    const bestValue = available[0]
+  if (deduplicated.length > 0) {
+    // Best value = most savings
+    const bestValue = deduplicated[0]
     if (bestValue.savings > 0) {
       bestValue.badge = 'best_value'
     }
 
-    // Cheapest overall
-    const cheapest = [...available].sort((a, b) => a.totalPrice - b.totalPrice)[0]
-    if (cheapest && cheapest !== bestValue) {
+    // Cheapest overall (if different from best value)
+    const cheapest = [...deduplicated].sort((a, b) => a.totalPrice - b.totalPrice)[0]
+    if (cheapest && cheapest !== bestValue && cheapest.totalPrice < bestValue.totalPrice) {
       cheapest.badge = 'cheapest'
     }
   }
 
-  return alternatives.slice(0, 10) // Return top 10
+  return deduplicated.slice(0, 10) // Return top 10 unique available alternatives
 }
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -390,8 +416,37 @@ export async function GET(
       )
     }
 
-    // Build price points for next 90 days
+    // ════════════════════════════════════════════════════════════════════════════
+    // CRITICAL: Get blocked dates from BOTH Boom AND Hostly reservations
+    // The frontend calendar uses both, so price intelligence must too!
+    // ════════════════════════════════════════════════════════════════════════════
     const today = startOfDay(new Date())
+    const endDate = addDays(today, 90)
+
+    // Get blocked dates from existing Hostly reservations
+    const reservations = await prisma.reservation.findMany({
+      where: {
+        propertyId: property.id,
+        status: { in: ['pending', 'confirmed'] },
+        checkOut: { gte: today },
+      },
+      select: {
+        checkIn: true,
+        checkOut: true,
+      },
+    })
+
+    // Build set of blocked dates from reservations
+    const blockedByReservation = new Set<string>()
+    for (const res of reservations) {
+      let current = startOfDay(res.checkIn)
+      while (current < res.checkOut) {
+        blockedByReservation.add(format(current, 'yyyy-MM-dd'))
+        current = addDays(current, 1)
+      }
+    }
+
+    // Build price points for next 90 days
     const allPrices: number[] = []
     const pricePoints: PricePoint[] = []
 
@@ -400,20 +455,28 @@ export async function GET(
       const dateStr = format(date, 'yyyy-MM-dd')
       const dayRate = daysRates[dateStr]
 
-      if (dayRate) {
-        const priceInAgorot = (dayRate.price || property.basePrice) * 100
-        allPrices.push(priceInAgorot)
+      // CRITICAL: A date is only available if BOTH:
+      // 1. Boom says status === 'available'
+      // 2. No Hostly reservation blocks it
+      const boomAvailable = dayRate?.status === 'available'
+      const notBlockedByReservation = !blockedByReservation.has(dateStr)
+      const isAvailable = boomAvailable && notBlockedByReservation
 
-        pricePoints.push({
-          date: dateStr,
-          price: priceInAgorot,
-          available: dayRate.status === 'available',
-          minNights: dayRate.minNights || property.minNights || 1,
-          isWeekend: isWeekend(date),
-          priceLevel: 'medium', // Will be calculated after
-          percentile: 0, // Will be calculated after
-        })
+      const priceInAgorot = ((dayRate?.price || property.basePrice) * 100)
+
+      if (dayRate) {
+        allPrices.push(priceInAgorot)
       }
+
+      pricePoints.push({
+        date: dateStr,
+        price: priceInAgorot,
+        available: isAvailable,  // Must pass BOTH checks
+        minNights: dayRate?.minNights || property.minNights || 1,
+        isWeekend: isWeekend(date),
+        priceLevel: 'medium', // Will be calculated after
+        percentile: 0, // Will be calculated after
+      })
     }
 
     // Calculate percentiles and price levels
@@ -506,8 +569,8 @@ export async function GET(
           },
         }),
 
-        // Flexible date alternatives
-        alternatives: alternatives.filter(a => a.availability === 'full'),
+        // Flexible date alternatives (already filtered for full availability)
+        alternatives,
 
         // Metadata
         currency: 'ILS',
