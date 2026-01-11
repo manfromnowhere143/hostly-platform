@@ -1,0 +1,34 @@
+Subject: API Access Request - Rently (Reservations Data + Webhooks)
+
+Hi Boom Team,
+
+I'm Daniel from Rently - we manage 29 vacation rental properties in Eilat and have been using Boom as our channel manager.
+
+We're building our own property management dashboard (moving away from Simple Booking) and need to pull reservation data from Boom. Our API credentials are working for listings, but the /reservations endpoint returns empty (204).
+
+**Our API credentials:**
+- Client ID: boom_a4a21558679b67f56789
+- Account: Rently (rently.co.il)
+
+**What we need:**
+
+1. **Historical Reservation Data** - Access to all past bookings (guest name, check-in/out dates, revenue, payout, source channel like Airbnb/Booking.com/Direct)
+
+2. **Webhook Setup** - Can you configure webhooks to push new reservations to our endpoint? This way we'll receive real-time booking notifications going forward.
+   - Our webhook URL: https://api.hostly.io/webhooks/boom (or we can provide any URL you need)
+
+3. **Calendar/Availability Access** - Currently getting 406 on /listings/{id}/calendar and /availability endpoints
+
+We're getting these responses:
+- GET /reservations → 204 (empty)
+- GET /listings/{id}/calendar → 406
+- GET /listings/{id}/availability → 406
+
+Is there a different API tier or permission level needed for reservation data? Simple Booking currently has access to our reservations through Boom - we need the same access for our new system.
+
+Happy to jump on a quick call if that's easier to sort out.
+
+Thanks!
+Daniel
+Rently Vacation Rentals
++972-50-611-1747
