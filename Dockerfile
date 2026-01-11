@@ -85,13 +85,13 @@ RUN adduser --system --uid 1001 nextjs
 # Copy public assets
 COPY --from=builder /app/public ./public
 
-# Copy standalone build (includes minimal node_modules)
+# Copy standalone build (includes node_modules with traced dependencies including Prisma)
+# Next.js outputFileTracingIncludes in next.config.ts ensures Prisma is included
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma client (generated during build)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+# Copy Prisma schema (needed for runtime query engine)
+COPY --from=builder /app/prisma ./prisma
 
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./

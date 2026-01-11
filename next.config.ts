@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   // Creates self-contained build in .next/standalone
   output: "standalone",
 
+  // Include Prisma client in standalone output
+  // Needed because pnpm uses a different node_modules structure
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./node_modules/.prisma/**/*", "./node_modules/@prisma/**/*"],
+  },
+
   // Strict mode for better error detection
   reactStrictMode: true,
 
