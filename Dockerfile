@@ -57,6 +57,10 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Dummy DATABASE_URL for build phase (Prisma client needs valid format during Next.js build)
+# Real DATABASE_URL is provided at runtime via environment variables
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
+
 # Build Next.js application
 RUN pnpm build
 
