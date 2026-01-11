@@ -1,13 +1,19 @@
 /**
- * PUBLIC PROPERTY DETAIL API
+ * PUBLIC PROPERTY DETAIL API - STATE OF THE ART
  *
- * Get details of a specific property including availability calendar
- * No authentication required - this is called by public websites
+ * Get details of a specific property including availability calendar.
+ * Uses REAL Boom PMS pricing from days_rates for accurate calendar prices.
+ * No authentication required - this is called by public websites.
+ *
+ * Pricing Source:
+ * 1. Boom days_rates (source of truth)
+ * 2. Hostly DB fallback if Boom unavailable
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db/client'
 import { addDays, startOfDay, format } from 'date-fns'
+import { boomSyncService, BoomDayRate } from '@/lib/services/boom-sync.service'
 
 export async function GET(
   request: NextRequest,
@@ -28,7 +34,7 @@ export async function GET(
       )
     }
 
-    // Get property with all details
+    // Get property with all details (include metadata for Boom ID)
     const property = await prisma.property.findFirst({
       where: {
         organizationId: organization.id,
@@ -85,7 +91,7 @@ export async function GET(
       },
     })
 
-    // Build availability map
+    // Build availability map from Hostly reservations
     const blockedDates = new Set<string>()
     for (const res of reservations) {
       let current = startOfDay(res.checkIn)
@@ -95,12 +101,35 @@ export async function GET(
       }
     }
 
+    // ════════════════════════════════════════════════════════════════════════════
+    // STATE OF THE ART: Get pricing from Boom days_rates (source of truth)
+    // ════════════════════════════════════════════════════════════════════════════
+    const boomId = (property.metadata as any)?.boomId as number | undefined
+    let boomDaysRates: Record<string, BoomDayRate> | null = null
+    let pricingSource: 'boom' | 'hostly' = 'hostly'
+
+    if (boomId) {
+      try {
+        const listing = await boomSyncService.getListingWithPricing(boomId)
+        if (listing) {
+          boomDaysRates = (listing as any).days_rates || null
+          if (boomDaysRates) {
+            pricingSource = 'boom'
+            console.log(`[Property Detail] Using Boom pricing for ${property.name}`)
+          }
+        }
+      } catch (e) {
+        console.warn(`[Property Detail] Boom pricing failed for ${property.name}:`, e)
+      }
+    }
+
     // Build calendar with pricing
     const calendar: Array<{
       date: string
       available: boolean
       price?: number
       minNights?: number
+      source?: string
     }> = []
 
     for (let i = 0; i < 90; i++) {
@@ -110,20 +139,39 @@ export async function GET(
         (cd) => format(cd.date, 'yyyy-MM-dd') === dateStr
       )
 
-      const isBlocked = blockedDates.has(dateStr) || calendarDay?.status === 'blocked'
-      const isWeekend = date.getDay() === 5 || date.getDay() === 6 // Fri, Sat
+      // Check Boom availability first, then Hostly
+      let isBlocked = blockedDates.has(dateStr) || calendarDay?.status === 'blocked'
+      let price = property.basePrice
+      let minNights = property.minNights
 
-      // Calculate price: use custom price if set, otherwise base price with 20% weekend markup
-      let price = calendarDay?.price ?? property.basePrice
-      if (!calendarDay?.price && isWeekend) {
-        price = Math.round(property.basePrice * 1.2)
+      // Use Boom data if available (convert to agorot for frontend)
+      if (boomDaysRates && boomDaysRates[dateStr]) {
+        const boomDay = boomDaysRates[dateStr]
+        // Boom returns shekels, multiply by 100 for agorot
+        price = (boomDay.price || property.basePrice) * 100
+        minNights = boomDay.minNights || property.minNights
+
+        // Boom says unavailable - override Hostly
+        if (boomDay.status !== 'available') {
+          isBlocked = true
+        }
+      } else {
+        // Fallback to Hostly pricing (also convert to agorot)
+        const isWeekend = date.getDay() === 5 || date.getDay() === 6
+        if (calendarDay?.price) {
+          price = calendarDay.price * 100
+        } else if (isWeekend) {
+          price = Math.round(property.basePrice * 1.2) * 100
+        } else {
+          price = property.basePrice * 100
+        }
       }
 
       calendar.push({
         date: dateStr,
         available: !isBlocked,
         price: isBlocked ? undefined : price,
-        minNights: calendarDay?.minNights ?? property.minNights,
+        minNights,
       })
     }
 
@@ -161,6 +209,7 @@ export async function GET(
           checkOutTime: property.checkOutTime,
         },
         calendar,
+        pricingSource, // 'boom' = real Boom PMS pricing, 'hostly' = fallback
       },
     })
   } catch (error) {

@@ -1,14 +1,20 @@
 /**
- * PUBLIC AVAILABILITY API
+ * PUBLIC AVAILABILITY API - STATE OF THE ART
  *
- * Check property availability for date range
- * No authentication required - this is called by public websites
+ * Check property availability for date range.
+ * Uses REAL Boom PMS days_rates for accurate availability.
+ * No authentication required - this is called by public websites.
+ *
+ * Availability Source:
+ * 1. Boom days_rates (source of truth)
+ * 2. Hostly DB fallback if Boom unavailable
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/db/client'
 import { bookingService } from '@/lib/services/booking.service'
+import { boomSyncService } from '@/lib/services/boom-sync.service'
 
 const AvailabilitySchema = z.object({
   propertyId: z.string(),
@@ -65,7 +71,70 @@ export async function POST(
       )
     }
 
-    // Check availability
+    // ════════════════════════════════════════════════════════════════════════════
+    // STATE OF THE ART: Check Boom availability first (source of truth)
+    // ════════════════════════════════════════════════════════════════════════════
+    const boomId = (property.metadata as any)?.boomId as number | undefined
+
+    if (boomId) {
+      console.log(`[Availability] Checking Boom for property ${property.name} (Boom ID: ${boomId})`)
+
+      const boomAvailability = await boomSyncService.checkAvailabilityFromBoom(
+        boomId,
+        checkIn,
+        checkOut
+      )
+
+      // If Boom says unavailable, return immediately
+      if (!boomAvailability.available) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            available: false,
+            reason: boomAvailability.blockedDates.length > 0
+              ? 'Selected dates are not available'
+              : `Minimum stay is ${boomAvailability.minNightsRequired} nights`,
+            blockedDates: boomAvailability.blockedDates,
+            minNightsRequired: boomAvailability.minNightsRequired,
+            source: 'boom',
+          },
+        })
+      }
+
+      // Boom says available, also verify against Hostly reservations
+      const hostlyResult = await bookingService.checkAvailability(organization.id, {
+        propertyId,
+        checkIn,
+        checkOut,
+        adults,
+        children,
+      })
+
+      // If Hostly has a conflict (shouldn't happen if synced), return unavailable
+      if (!hostlyResult.available) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            ...hostlyResult,
+            source: 'hostly',
+          },
+        })
+      }
+
+      // Both say available
+      return NextResponse.json({
+        success: true,
+        data: {
+          available: true,
+          minNightsRequired: boomAvailability.minNightsRequired,
+          source: 'boom',
+        },
+      })
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // FALLBACK: Use Hostly availability if no Boom ID
+    // ════════════════════════════════════════════════════════════════════════════
     const result = await bookingService.checkAvailability(organization.id, {
       propertyId,
       checkIn,
@@ -76,7 +145,10 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      data: result,
+      data: {
+        ...result,
+        source: 'hostly',
+      },
     })
   } catch (error) {
     console.error('Availability check error:', error)

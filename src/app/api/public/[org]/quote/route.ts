@@ -1,14 +1,23 @@
 /**
- * PUBLIC QUOTE API
+ * PUBLIC QUOTE API - STATE OF THE ART
  *
- * Generate pricing quote for a stay
- * No authentication required - this is called by public websites
+ * Generate pricing quote using REAL Boom PMS pricing.
+ * Source of truth: Boom's days_rates for accurate pricing.
+ * No authentication required - this is called by public websites.
+ *
+ * Pricing Flow:
+ * 1. Check property → Boom ID mapping
+ * 2. Fetch real pricing from Boom days_rates
+ * 3. Fall back to Hostly DB if Boom unavailable
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/db/client'
 import { bookingService } from '@/lib/services/booking.service'
+import { boomSyncService } from '@/lib/services/boom-sync.service'
+import { ids } from '@/lib/utils/id'
+import { addDays, differenceInDays, parseISO } from 'date-fns'
 
 const QuoteSchema = z.object({
   propertyId: z.string(),
@@ -66,7 +75,159 @@ export async function POST(
       )
     }
 
-    // Generate quote
+    // ════════════════════════════════════════════════════════════════════════════
+    // STATE OF THE ART: Try Boom pricing first (source of truth)
+    // ════════════════════════════════════════════════════════════════════════════
+    const boomId = (property.metadata as any)?.boomId as number | undefined
+    const totalGuests = adults + children
+    const nights = differenceInDays(parseISO(checkOut), parseISO(checkIn))
+
+    // Validate guest capacity
+    if (property.maxGuests && totalGuests > property.maxGuests) {
+      return NextResponse.json(
+        { success: false, error: { code: 'GUEST_LIMIT', message: `Maximum ${property.maxGuests} guests allowed` } },
+        { status: 400 }
+      )
+    }
+
+    // Validate minimum nights
+    if (property.minNights && nights < property.minNights) {
+      return NextResponse.json(
+        { success: false, error: { code: 'MIN_NIGHTS', message: `Minimum stay is ${property.minNights} nights` } },
+        { status: 400 }
+      )
+    }
+
+    if (boomId) {
+      console.log(`[Quote] Using Boom pricing for property ${property.name} (Boom ID: ${boomId})`)
+
+      const boomPricing = await boomSyncService.calculatePricingFromBoom(
+        boomId,
+        checkIn,
+        checkOut,
+        totalGuests
+      )
+
+      if (boomPricing) {
+        // Check availability
+        if (!boomPricing.available) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'NOT_AVAILABLE',
+                message: 'Selected dates are not available',
+                blockedDates: boomPricing.blockedDates,
+              }
+            },
+            { status: 400 }
+          )
+        }
+
+        // Apply discounts
+        const discounts: Array<{ type: string; description: string; amount: number }> = []
+
+        // Weekly discount (7+ nights = 10% off)
+        if (nights >= 7) {
+          const weeklyDiscount = Math.round(boomPricing.accommodationTotal * 0.1)
+          discounts.push({
+            type: 'weekly',
+            description: 'Weekly stay discount (10%)',
+            amount: weeklyDiscount,
+          })
+        }
+
+        // Monthly discount (28+ nights = 20% off)
+        if (nights >= 28) {
+          const monthlyDiscount = Math.round(boomPricing.accommodationTotal * 0.2)
+          discounts.push({
+            type: 'monthly',
+            description: 'Monthly stay discount (20%)',
+            amount: monthlyDiscount,
+          })
+        }
+
+        // Promo code discount
+        if (promoCode) {
+          const promoDiscount = Math.round(boomPricing.accommodationTotal * 0.05)
+          discounts.push({
+            type: 'promo',
+            description: `Promo code: ${promoCode}`,
+            amount: promoDiscount,
+          })
+        }
+
+        const discountTotal = discounts.reduce((sum, d) => sum + d.amount, 0)
+
+        // Recalculate totals with discounts
+        const accommodationAfterDiscount = boomPricing.accommodationTotal - discountTotal
+        const subtotal = accommodationAfterDiscount + boomPricing.cleaningFee + boomPricing.serviceFee
+        const taxes = Math.round(subtotal * 0.17) // 17% VAT
+        const grandTotal = subtotal + taxes
+
+        // Create quote record
+        const quote = await prisma.quote.create({
+          data: {
+            id: ids.quote(),
+            organizationId: organization.id,
+            propertyId,
+            checkIn: parseISO(checkIn),
+            checkOut: parseISO(checkOut),
+            adults,
+            children,
+            currency: boomPricing.currency,
+            nightlyRates: boomPricing.nightlyRates,
+            accommodation: boomPricing.accommodationTotal,
+            cleaningFee: boomPricing.cleaningFee,
+            serviceFee: boomPricing.serviceFee,
+            taxes,
+            discounts,
+            total: grandTotal,
+            expiresAt: addDays(new Date(), 1),
+          },
+        })
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            id: quote.id,
+            propertyId: property.id,
+            propertyName: property.name,
+            checkIn,
+            checkOut,
+            nights: boomPricing.nights,
+            guests: { adults, children, total: totalGuests },
+            pricing: {
+              currency: boomPricing.currency,
+              nightlyRates: boomPricing.nightlyRates.map(r => ({
+                date: r.date,
+                price: r.price,
+                minNights: r.minNights,
+              })),
+              accommodationTotal: boomPricing.accommodationTotal,
+              cleaningFee: boomPricing.cleaningFee,
+              serviceFee: boomPricing.serviceFee,
+              taxes,
+              discounts,
+              discountTotal,
+              grandTotal,
+              averageNightlyRate: boomPricing.averageNightlyRate,
+            },
+            source: 'boom', // Indicates real Boom pricing
+            expiresAt: quote.expiresAt.toISOString(),
+          },
+        })
+      }
+
+      console.log(`[Quote] Boom pricing failed for ${property.name}, falling back to Hostly`)
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // FALLBACK: Use Hostly internal pricing if Boom unavailable
+    // Convert to agorot (smallest currency unit) for frontend compatibility
+    // ════════════════════════════════════════════════════════════════════════════
+    console.log(`[Quote] Using Hostly fallback pricing for ${property.name}`)
+
     const quote = await bookingService.generateQuote(organization.id, {
       propertyId,
       checkIn,
@@ -76,9 +237,30 @@ export async function POST(
       promoCode,
     })
 
+    // Convert from shekels to agorot (multiply by 100)
     return NextResponse.json({
       success: true,
-      data: quote,
+      data: {
+        ...quote,
+        pricing: {
+          ...quote.pricing,
+          nightlyRates: quote.pricing.nightlyRates.map(r => ({
+            ...r,
+            price: r.price * 100,
+          })),
+          accommodationTotal: quote.pricing.accommodationTotal * 100,
+          cleaningFee: quote.pricing.cleaningFee * 100,
+          serviceFee: quote.pricing.serviceFee * 100,
+          taxes: quote.pricing.taxes * 100,
+          discounts: quote.pricing.discounts.map(d => ({
+            ...d,
+            amount: d.amount * 100,
+          })),
+          discountTotal: quote.pricing.discountTotal * 100,
+          grandTotal: quote.pricing.grandTotal * 100,
+        },
+        source: 'hostly', // Indicates fallback pricing
+      },
     })
   } catch (error) {
     console.error('Quote generation error:', error)

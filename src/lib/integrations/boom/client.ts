@@ -445,9 +445,16 @@ export class BoomClient {
     if (params?.per_page) query.append('per_page', params.per_page.toString())
 
     const queryString = query.toString()
-    return this.request<BoomReservationsResponse>(
+    const result = await this.request<BoomReservationsResponse | null>(
       `/reservations${queryString ? `?${queryString}` : ''}`
     )
+
+    // Handle empty responses (204 No Content returns empty object)
+    if (!result || !result.reservations) {
+      return { reservations: [] }
+    }
+
+    return result
   }
 
   /**
@@ -667,13 +674,15 @@ export class BoomClient {
         per_page: 100,
       })
 
-      allReservations.push(...response.reservations)
+      // Handle empty responses
+      const reservations = response.reservations || []
+      allReservations.push(...reservations)
 
       // Check if there are more pages
       if (response.pagi_info) {
         hasMore = page < response.pagi_info.total_pages
       } else {
-        hasMore = response.reservations.length === 100
+        hasMore = reservations.length === 100
       }
       page++
 

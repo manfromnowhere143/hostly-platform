@@ -1,19 +1,24 @@
 /**
- * AVAILABLE PROPERTIES API
+ * AVAILABLE PROPERTIES API - STATE OF THE ART
  *
  * Returns only properties that are AVAILABLE for the specified date range.
- * This is the key endpoint for the booking flow - filters out booked properties.
+ * Uses REAL Boom PMS pricing from days_rates for accurate prices.
  *
  * Query params:
  * - checkIn: YYYY-MM-DD
  * - checkOut: YYYY-MM-DD
  * - adults: number
  * - children: number (optional)
+ *
+ * Pricing Source:
+ * 1. Boom days_rates (source of truth)
+ * 2. Hostly DB fallback if Boom unavailable
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db/client'
 import { bookingService } from '@/lib/services/booking.service'
+import { boomSyncService } from '@/lib/services/boom-sync.service'
 
 export async function GET(
   request: NextRequest,
@@ -70,7 +75,7 @@ export async function GET(
       )
     }
 
-    // Get all active properties
+    // Get all active properties (include metadata for Boom ID mapping)
     const allProperties = await prisma.property.findMany({
       where: {
         organizationId: organization.id,
@@ -91,6 +96,7 @@ export async function GET(
         cleaningFee: true,
         currency: true,
         minNights: true,
+        metadata: true, // For Boom ID mapping
         photos: {
           select: {
             id: true,
@@ -186,10 +192,49 @@ export async function GET(
       return true
     })
 
-    // Calculate pricing for each available property
+    // ════════════════════════════════════════════════════════════════════════════
+    // STATE OF THE ART: Calculate pricing using Boom days_rates (source of truth)
+    // ════════════════════════════════════════════════════════════════════════════
     const propertiesWithPricing = await Promise.all(
       availableProperties.map(async (property) => {
         try {
+          const boomId = (property as any).metadata?.boomId as number | undefined
+
+          // Try Boom pricing first (source of truth)
+          if (boomId) {
+            const boomPricing = await boomSyncService.calculatePricingFromBoom(
+              boomId,
+              checkIn,
+              checkOut,
+              adults + children
+            )
+
+            if (boomPricing && boomPricing.available) {
+              console.log(`[Available Properties] Boom pricing for ${property.name}: ₪${boomPricing.grandTotal}`)
+              return {
+                ...property,
+                pricing: {
+                  nights: boomPricing.nights,
+                  accommodation: boomPricing.accommodationTotal,
+                  cleaningFee: boomPricing.cleaningFee,
+                  serviceFee: boomPricing.serviceFee,
+                  taxes: boomPricing.taxes,
+                  total: boomPricing.grandTotal,
+                  currency: boomPricing.currency,
+                  averageNightlyRate: boomPricing.averageNightlyRate,
+                  source: 'boom',
+                },
+              }
+            }
+
+            // If Boom says unavailable, skip this property
+            if (boomPricing && !boomPricing.available) {
+              console.log(`[Available Properties] ${property.name} unavailable per Boom`)
+              return null // Will be filtered out
+            }
+          }
+
+          // Fallback to Hostly pricing (convert to agorot for frontend)
           const quote = await bookingService.generateQuote(organization.id, {
             propertyId: property.id,
             checkIn,
@@ -198,16 +243,19 @@ export async function GET(
             children,
           })
 
+          // Hostly returns shekels, multiply by 100 for agorot
           return {
             ...property,
             pricing: {
               nights: quote.nights,
-              accommodation: quote.pricing.accommodationTotal,
-              cleaningFee: quote.pricing.cleaningFee,
-              serviceFee: quote.pricing.serviceFee,
-              total: quote.pricing.grandTotal,
+              accommodation: quote.pricing.accommodationTotal * 100,
+              cleaningFee: quote.pricing.cleaningFee * 100,
+              serviceFee: quote.pricing.serviceFee * 100,
+              taxes: quote.pricing.taxes * 100,
+              total: quote.pricing.grandTotal * 100,
               currency: quote.pricing.currency,
-              averageNightlyRate: Math.round(quote.pricing.accommodationTotal / quote.nights),
+              averageNightlyRate: Math.round((quote.pricing.accommodationTotal / quote.nights) * 100),
+              source: 'hostly',
             },
           }
         } catch (error) {
@@ -221,6 +269,9 @@ export async function GET(
       })
     )
 
+    // Filter out null entries (properties that Boom marked as unavailable)
+    const finalProperties = propertiesWithPricing.filter(p => p !== null)
+
     return NextResponse.json({
       success: true,
       data: {
@@ -228,9 +279,9 @@ export async function GET(
         checkOut,
         nights,
         guests: { adults, children },
-        available: propertiesWithPricing.length,
+        available: finalProperties.length,
         total: allProperties.length,
-        properties: propertiesWithPricing,
+        properties: finalProperties,
       },
     })
 
