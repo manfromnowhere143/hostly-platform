@@ -17,6 +17,7 @@ import { MarketplaceSearchProvider, useMarketplaceSearch, SearchProperty } from 
 import DateRangePicker from '@/components/marketplace/DateRangePicker'
 import GuestsPicker from '@/components/marketplace/GuestsPicker'
 import BecomeHostSection from '@/components/marketplace/BecomeHostSection'
+import FeaturedHostsShowcase from '@/components/marketplace/FeaturedHostsShowcase'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Property {
@@ -1293,43 +1294,8 @@ function MarketplaceContent() {
         </div>
       </section>
 
-      {/* Featured Host Banner */}
-      <section className="py-12 bg-gradient-to-r from-[var(--primary-50)] to-[var(--primary-100)]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`flex flex-col md:flex-row items-center gap-8 md:gap-12 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
-            <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[var(--primary-300)] to-[var(--primary-400)] flex items-center justify-center shadow-lg">
-              <span className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-playfair, serif)' }}>R</span>
-            </div>
-            <div className={`flex-1 text-center ${isRTL ? 'md:text-right' : 'md:text-left'}`}>
-              <Badge variant="primary" className="mb-3">{t('marketplace.featuredHost')}</Badge>
-              <h2 className="text-2xl md:text-3xl font-bold text-[var(--foreground)] mb-2" style={{ fontFamily: 'var(--font-playfair, serif)' }}>
-                Rently Luxury Rentals
-              </h2>
-              <p className="text-[var(--foreground-muted)] mb-4 max-w-xl">{t('marketplace.hostDescription')}</p>
-              <Link href="/h/rently">
-                <Button className="group">
-                  {t('marketplace.exploreHost')}
-                  <ChevronRightIcon className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${isRTL ? 'mr-1 rotate-180' : 'ml-1'}`} />
-                </Button>
-              </Link>
-            </div>
-            <div className={`flex gap-8 text-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div>
-                <div className="text-3xl font-bold text-[var(--brand-primary)]">{totalProperties || 28}</div>
-                <div className="text-sm text-[var(--foreground-muted)]">{t('marketplace.properties')}</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-[var(--brand-primary)]">4.95</div>
-                <div className="text-sm text-[var(--foreground-muted)]">{t('marketplace.avgRating')}</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-[var(--brand-primary)]">500+</div>
-                <div className="text-sm text-[var(--foreground-muted)]">{t('marketplace.reviews')}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Featured Hosts Showcase - State-of-the-Art Host Sites Display */}
+      <FeaturedHostsShowcase />
 
       {/* Become a Host CTA Section - State-of-the-Art Design */}
       <BecomeHostSection />

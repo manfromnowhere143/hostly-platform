@@ -41,7 +41,7 @@ function ProgressBar({ currentStep, isRTL }: { currentStep: Step; isRTL: boolean
               w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm
               transition-all duration-500
               ${idx <= currentIndex
-                ? 'bg-gradient-to-br from-[#FF385C] to-[#BD1E59] text-white shadow-lg'
+                ? 'bg-gradient-to-br from-[#B5846D] to-[#8B6347] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-400'
               }
             `}
@@ -57,7 +57,7 @@ function ProgressBar({ currentStep, isRTL }: { currentStep: Step; isRTL: boolean
           {idx < steps.length - 1 && (
             <div
               className={`w-12 h-1 mx-2 rounded-full transition-all duration-500 ${
-                idx < currentIndex ? 'bg-[#FF385C]' : 'bg-gray-200'
+                idx < currentIndex ? 'bg-[#B5846D]' : 'bg-gray-200'
               }`}
             />
           )}
@@ -112,7 +112,7 @@ function Input({
             w-full px-4 py-3 bg-[#f7f7f7] rounded-xl border-2 transition-all duration-300
             placeholder:text-gray-400 text-[#222] font-medium
             ${icon ? (isRTL ? 'pr-12' : 'pl-12') : ''}
-            ${isFocused ? 'border-[#FF385C] bg-white shadow-lg shadow-[#FF385C]/10' : 'border-transparent'}
+            ${isFocused ? 'border-[#B5846D] bg-white shadow-lg shadow-[#B5846D]/10' : 'border-transparent'}
             ${error ? 'border-red-500 bg-red-50' : ''}
           `}
           style={{ direction: isRTL ? 'rtl' : 'ltr' }}
@@ -305,7 +305,7 @@ function BusinessStep({
             className={`
               w-full px-4 py-3 bg-[#f7f7f7] rounded-xl border-2 border-transparent
               text-[#222] font-medium appearance-none cursor-pointer
-              hover:bg-gray-100 focus:border-[#FF385C] focus:bg-white transition-all
+              hover:bg-gray-100 focus:border-[#B5846D] focus:bg-white transition-all
               ${isRTL ? 'pr-12' : 'pl-12'}
             `}
             style={{ direction: isRTL ? 'rtl' : 'ltr' }}
@@ -338,7 +338,7 @@ function BusinessStep({
               className={`
                 py-3 rounded-xl font-medium transition-all duration-300
                 ${formData.propertyCount === count
-                  ? 'bg-[#FF385C] text-white shadow-lg'
+                  ? 'bg-[#B5846D] text-white shadow-lg'
                   : 'bg-[#f7f7f7] text-[#222] hover:bg-gray-200'
                 }
               `}
@@ -355,16 +355,16 @@ function BusinessStep({
           type="checkbox"
           checked={formData.agreedToTerms}
           onChange={(e) => setFormData({ agreedToTerms: e.target.checked })}
-          className="w-5 h-5 mt-0.5 rounded border-gray-300 text-[#FF385C] focus:ring-[#FF385C]"
+          className="w-5 h-5 mt-0.5 rounded border-gray-300 text-[#B5846D] focus:ring-[#B5846D]"
         />
         <span className={`text-sm text-[#717171] ${isRTL ? 'text-right' : ''}`}>
           {isRTL ? (
             <>
-              אני מסכים ל<Link href="/terms" className="text-[#FF385C] hover:underline">תנאי השימוש</Link> ול<Link href="/privacy" className="text-[#FF385C] hover:underline">מדיניות הפרטיות</Link>
+              אני מסכים ל<Link href="/terms" className="text-[#B5846D] hover:underline">תנאי השימוש</Link> ול<Link href="/privacy" className="text-[#B5846D] hover:underline">מדיניות הפרטיות</Link>
             </>
           ) : (
             <>
-              I agree to the <Link href="/terms" className="text-[#FF385C] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#FF385C] hover:underline">Privacy Policy</Link>
+              I agree to the <Link href="/terms" className="text-[#B5846D] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#B5846D] hover:underline">Privacy Policy</Link>
             </>
           )}
         </span>
@@ -401,21 +401,21 @@ function CompleteStep({ isRTL }: { isRTL: boolean }) {
       {/* Quick stats */}
       <div className={`grid grid-cols-3 gap-4 max-w-md mx-auto mb-8 ${isRTL ? 'direction-rtl' : ''}`}>
         <div className="bg-[#f7f7f7] rounded-xl p-4">
-          <div className="text-2xl font-bold text-[#FF385C]">₪0</div>
+          <div className="text-2xl font-bold text-[#B5846D]">₪0</div>
           <div className="text-xs text-[#717171]">{isRTL ? 'עמלות רישום' : 'Listing fees'}</div>
         </div>
         <div className="bg-[#f7f7f7] rounded-xl p-4">
-          <div className="text-2xl font-bold text-[#FF385C]">3%</div>
+          <div className="text-2xl font-bold text-[#B5846D]">3%</div>
           <div className="text-xs text-[#717171]">{isRTL ? 'עמלת הזמנה' : 'Booking fee'}</div>
         </div>
         <div className="bg-[#f7f7f7] rounded-xl p-4">
-          <div className="text-2xl font-bold text-[#FF385C]">24h</div>
+          <div className="text-2xl font-bold text-[#B5846D]">24h</div>
           <div className="text-xs text-[#717171]">{isRTL ? 'תשלום' : 'Payout'}</div>
         </div>
       </div>
 
       <Link href="/portal/onboarding">
-        <button className="px-8 py-4 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <button className="px-8 py-4 bg-gradient-to-r from-[#B5846D] to-[#8B6347] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
           {isRTL ? 'הוסף את הנכס הראשון' : 'Add your first property'}
         </button>
       </Link>
@@ -550,7 +550,7 @@ export default function SignupPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#FF385C] to-[#BD1E59] rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#B5846D] to-[#8B6347] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">H</span>
               </div>
               <span className="font-bold text-xl text-[#222]">Hostly</span>
@@ -604,7 +604,7 @@ export default function SignupPage() {
                   onClick={handleNext}
                   disabled={isLoading}
                   className={`
-                    flex-1 px-6 py-3 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold rounded-xl
+                    flex-1 px-6 py-3 bg-gradient-to-r from-[#B5846D] to-[#8B6347] text-white font-semibold rounded-xl
                     hover:shadow-lg hover:scale-[1.02] transition-all duration-300
                     disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                     flex items-center justify-center gap-2
@@ -632,7 +632,7 @@ export default function SignupPage() {
           {step !== 'complete' && (
             <p className={`text-center mt-6 text-[#717171] ${isRTL ? 'text-right' : ''}`}>
               {isRTL ? 'כבר יש לך חשבון?' : 'Already have an account?'}{' '}
-              <Link href="/portal" className="text-[#FF385C] font-medium hover:underline">
+              <Link href="/portal" className="text-[#B5846D] font-medium hover:underline">
                 {isRTL ? 'התחבר' : 'Log in'}
               </Link>
             </p>

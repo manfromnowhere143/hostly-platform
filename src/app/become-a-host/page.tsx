@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // BECOME A HOST - Landing Page
 // ═══════════════════════════════════════════════════════════════════════════════
-// World-class onboarding landing page inspired by Airbnb's excellence.
-// Features: Hero with video, How it Works, Success Stories, Benefits, FAQ, CTA
+// World-class onboarding landing page with elegant, sophisticated design.
+// Features: Hero with earnings calc, How it Works, Success Stories, Benefits, FAQ
+// Color Palette: Warm champagne (#B5846D), Deep navy (#2C3E50), Gold (#C9A86C)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 'use client'
@@ -67,8 +68,8 @@ function FloatingShapes() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Animated gradient orbs */}
-      <div className="absolute w-[600px] h-[600px] -top-40 -left-40 bg-gradient-to-br from-[#FF385C]/30 to-transparent rounded-full blur-3xl animate-float-slow" />
-      <div className="absolute w-[500px] h-[500px] top-1/2 -right-40 bg-gradient-to-bl from-[#BD1E59]/20 to-transparent rounded-full blur-3xl animate-float-slow-reverse" />
+      <div className="absolute w-[600px] h-[600px] -top-40 -left-40 bg-gradient-to-br from-[#B5846D]/30 to-transparent rounded-full blur-3xl animate-float-slow" />
+      <div className="absolute w-[500px] h-[500px] top-1/2 -right-40 bg-gradient-to-bl from-[#8B6347]/20 to-transparent rounded-full blur-3xl animate-float-slow-reverse" />
       <div className="absolute w-[400px] h-[400px] bottom-20 left-1/4 bg-gradient-to-tr from-[#00A699]/20 to-transparent rounded-full blur-3xl animate-float-medium" />
 
       {/* Grid pattern */}
@@ -102,9 +103,9 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
           {/* Content */}
           <div className={`space-y-8 ${isRTL ? 'lg:col-start-2 text-right' : ''}`}>
             {/* Badge */}
-            <div className={`inline-flex items-center gap-2 px-4 py-2 bg-[#FF385C]/10 rounded-full ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <span className="w-2 h-2 bg-[#FF385C] rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-[#FF385C]">
+            <div className={`inline-flex items-center gap-2 px-4 py-2 bg-[#B5846D]/10 rounded-full ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="w-2 h-2 bg-[#B5846D] rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-[#B5846D]">
                 {isRTL ? '2,847 מארחים חדשים החודש' : '2,847 new hosts this month'}
               </span>
             </div>
@@ -118,7 +119,7 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
                 <>
                   <span className="block">הפוך את הנכס</span>
                   <span className="block">שלך ל</span>
-                  <span className="block bg-gradient-to-r from-[#FF385C] to-[#BD1E59] bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-[#B5846D] to-[#8B6347] bg-clip-text text-transparent">
                     מקור הכנסה
                   </span>
                 </>
@@ -126,7 +127,7 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
                 <>
                   <span className="block">Turn your</span>
                   <span className="block">property into</span>
-                  <span className="block bg-gradient-to-r from-[#FF385C] to-[#BD1E59] bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-[#B5846D] to-[#8B6347] bg-clip-text text-transparent">
                     income
                   </span>
                 </>
@@ -143,7 +144,7 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
             {/* CTA Buttons */}
             <div className={`flex flex-col sm:flex-row gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
               <Link href="/become-a-host/signup" className="group">
-                <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold text-lg rounded-xl shadow-lg shadow-[#FF385C]/30 hover:shadow-xl hover:shadow-[#FF385C]/40 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#B5846D] to-[#8B6347] text-white font-semibold text-lg rounded-xl shadow-lg shadow-[#B5846D]/30 hover:shadow-xl hover:shadow-[#B5846D]/40 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
                   {isRTL ? 'התחל עכשיו' : 'Get Started'}
                   <svg className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -185,7 +186,7 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
           {/* Earnings Calculator Card */}
           <div className={`relative ${isRTL ? 'lg:col-start-1' : ''}`}>
             {/* Glow effect */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-[#FF385C]/20 via-[#BD1E59]/20 to-[#FF385C]/20 rounded-3xl blur-2xl opacity-60" />
+            <div className="absolute -inset-4 bg-gradient-to-r from-[#B5846D]/20 via-[#8B6347]/20 to-[#B5846D]/20 rounded-3xl blur-2xl opacity-60" />
 
             <div className="relative bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
               <div className={`text-center ${isRTL ? 'text-right' : ''}`}>
@@ -207,7 +208,7 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
                 </label>
                 <div className="relative">
                   <select
-                    className="w-full px-4 py-3 bg-[#f7f7f7] rounded-xl border-0 text-[#222] font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-[#FF385C] transition-all"
+                    className="w-full px-4 py-3 bg-[#f7f7f7] rounded-xl border-0 text-[#222] font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-[#B5846D] transition-all"
                     onChange={(e) => {
                       const values: Record<string, number> = {
                         eilat: 8500,
@@ -233,7 +234,7 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
               </div>
 
               <Link href="/become-a-host/signup">
-                <button className="w-full mt-6 px-8 py-4 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+                <button className="w-full mt-6 px-8 py-4 bg-gradient-to-r from-[#B5846D] to-[#8B6347] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                   {isRTL ? 'התחל להרוויח' : 'Start earning'}
                 </button>
               </Link>
@@ -266,7 +267,7 @@ function HowItWorksSection({ isRTL }: { isRTL: boolean }) {
       description: isRTL
         ? 'הוסף תמונות, תיאור ופרטי הנכס. האשף שלנו ידריך אותך צעד אחר צעד.'
         : 'Add photos, description, and property details. Our wizard guides you step by step.',
-      color: '#FF385C'
+      color: '#B5846D'
     },
     {
       number: '02',
@@ -366,7 +367,7 @@ function SuccessStoriesSection({ isRTL }: { isRTL: boolean }) {
         ? '"הצטרפתי להוסטלי לפני שנה והכנסתי יותר מ-500,000 ש"ח. הפלטפורמה קלה לשימוש והתמיכה מדהימה."'
         : '"I joined Hostly a year ago and made over ₪500,000. The platform is easy to use and the support is amazing."',
       badge: 'Superhost',
-      avatar: '#FF385C',
+      avatar: '#B5846D',
       properties: 3
     },
     {
@@ -443,19 +444,19 @@ function SuccessStoriesSection({ isRTL }: { isRTL: boolean }) {
 
                 <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <div>
-                    <div className="text-3xl font-bold text-[#FF385C]">
+                    <div className="text-3xl font-bold text-[#B5846D]">
                       {current.earnings}
                       <span className="text-lg text-[#717171] font-normal">{current.period}</span>
                     </div>
                   </div>
-                  <span className="px-3 py-1 bg-[#FF385C]/10 text-[#FF385C] text-sm font-medium rounded-full">
+                  <span className="px-3 py-1 bg-[#B5846D]/10 text-[#B5846D] text-sm font-medium rounded-full">
                     {current.badge}
                   </span>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className={`bg-gradient-to-br from-[#FF385C] to-[#BD1E59] p-8 md:p-12 text-white ${isRTL ? 'md:col-start-1' : ''}`}>
+              <div className={`bg-gradient-to-br from-[#B5846D] to-[#8B6347] p-8 md:p-12 text-white ${isRTL ? 'md:col-start-1' : ''}`}>
                 <div className="h-full flex flex-col justify-center space-y-8">
                   <div className={isRTL ? 'text-right' : ''}>
                     <div className="text-5xl font-bold mb-1">₪500K+</div>
@@ -482,7 +483,7 @@ function SuccessStoriesSection({ isRTL }: { isRTL: boolean }) {
                 onClick={() => setActiveStory(idx)}
                 className={`
                   h-2 rounded-full transition-all duration-300
-                  ${idx === activeStory ? 'w-8 bg-[#FF385C]' : 'w-2 bg-gray-300 hover:bg-gray-400'}
+                  ${idx === activeStory ? 'w-8 bg-[#B5846D]' : 'w-2 bg-gray-300 hover:bg-gray-400'}
                 `}
               />
             ))}
@@ -648,7 +649,7 @@ function FAQSection({ isRTL }: { isRTL: boolean }) {
 // ─── Final CTA Section ─────────────────────────────────────────────────────────
 function FinalCTASection({ isRTL }: { isRTL: boolean }) {
   return (
-    <section className="py-24 bg-gradient-to-br from-[#FF385C] to-[#BD1E59] text-white relative overflow-hidden">
+    <section className="py-24 bg-gradient-to-br from-[#B5846D] to-[#8B6347] text-white relative overflow-hidden">
       {/* Background shapes */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute w-96 h-96 -top-48 -left-48 bg-white rounded-full" />
@@ -668,7 +669,7 @@ function FinalCTASection({ isRTL }: { isRTL: boolean }) {
           </p>
 
           <Link href="/become-a-host/signup">
-            <button className="px-10 py-5 bg-white text-[#FF385C] font-bold text-xl rounded-xl shadow-2xl hover:shadow-white/25 hover:scale-105 transition-all duration-300">
+            <button className="px-10 py-5 bg-white text-[#B5846D] font-bold text-xl rounded-xl shadow-2xl hover:shadow-white/25 hover:scale-105 transition-all duration-300">
               {isRTL ? 'התחל עכשיו - חינם' : 'Get Started - Free'}
             </button>
           </Link>
@@ -693,7 +694,7 @@ export default function BecomeHostPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#FF385C] to-[#BD1E59] rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#B5846D] to-[#8B6347] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">H</span>
               </div>
               <span className="font-bold text-xl text-[#222]">Hostly</span>
@@ -704,7 +705,7 @@ export default function BecomeHostPage() {
                 {isRTL ? 'התחבר' : 'Log in'}
               </Link>
               <Link href="/become-a-host/signup">
-                <button className="px-4 py-2 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-medium rounded-lg hover:shadow-lg transition-all">
+                <button className="px-4 py-2 bg-gradient-to-r from-[#B5846D] to-[#8B6347] text-white font-medium rounded-lg hover:shadow-lg transition-all">
                   {isRTL ? 'הרשמה' : 'Sign up'}
                 </button>
               </Link>
@@ -728,7 +729,7 @@ export default function BecomeHostPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex flex-col md:flex-row items-center justify-between gap-4 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
             <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-6 h-6 bg-gradient-to-br from-[#FF385C] to-[#BD1E59] rounded flex items-center justify-center">
+              <div className="w-6 h-6 bg-gradient-to-br from-[#B5846D] to-[#8B6347] rounded flex items-center justify-center">
                 <span className="text-white font-bold text-xs">H</span>
               </div>
               <span className="font-semibold text-white">Hostly</span>
