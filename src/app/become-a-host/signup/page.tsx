@@ -644,7 +644,7 @@ export default function SignupPage() {
           {step !== 'complete' && (
             <p className={`text-center mt-6 text-[#717171] ${isRTL ? 'text-right' : ''}`}>
               {isRTL ? 'כבר יש לך חשבון?' : 'Already have an account?'}{' '}
-              <Link href="/portal" className="text-[#B5846D] font-medium hover:underline">
+              <Link href="/portal/login" className="text-[#B5846D] font-medium hover:underline">
                 {isRTL ? 'התחבר' : 'Log in'}
               </Link>
             </p>

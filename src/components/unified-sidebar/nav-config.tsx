@@ -130,6 +130,15 @@ function ArrowLeftIcon({ className }: { className?: string }) {
   );
 }
 
+function LogoutIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" strokeWidth="1.5">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" strokeWidth="1.5">
@@ -345,6 +354,12 @@ export function getHostNavGroups(hostSlug: string): NavGroup[] {
           icon: ArrowLeftIcon,
           href: '/',
         },
+        {
+          id: 'logout',
+          label: { en: 'Log out', he: 'התנתק' },
+          icon: LogoutIcon,
+          action: { type: 'logout' },
+        },
       ],
     },
   ];
@@ -422,6 +437,8 @@ export const Icons = {
   Chart: ChartIcon,
   Cog: CogIcon,
   User: UserIcon,
+  ArrowLeft: ArrowLeftIcon,
+  Logout: LogoutIcon,
   Instagram: InstagramIcon,
   WhatsApp: WhatsAppIcon,
   Facebook: FacebookIcon,

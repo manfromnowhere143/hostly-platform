@@ -35,7 +35,8 @@ async function main() {
   console.log('Created amenities')
 
   // Create Rently organization
-  const passwordHash = await bcrypt.hash('password123', 12)
+  // Password for info@rently.co.il is: aces1988
+  const passwordHash = await bcrypt.hash('aces1988', 12)
 
   const rently = await prisma.organization.upsert({
     where: { slug: 'rently' },
@@ -59,19 +60,21 @@ async function main() {
 
   console.log('Created Rently organization')
 
-  // Create owner user
+  // Create owner user (info@rently.co.il / aces1988)
   await prisma.user.upsert({
     where: {
       organizationId_email: {
         organizationId: rently.id,
-        email: 'admin@rently.com',
+        email: 'info@rently.co.il',
       },
     },
-    update: {},
+    update: {
+      passwordHash, // Update password if user exists
+    },
     create: {
       id: 'user_rently_admin',
       organizationId: rently.id,
-      email: 'admin@rently.com',
+      email: 'info@rently.co.il',
       passwordHash,
       name: 'Rently Admin',
       role: 'owner',

@@ -38,12 +38,39 @@ export function PortalLayoutClient({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentTheme, setCurrentTheme] = useState<SidebarTheme>('white')
   const [currentLang, setCurrentLang] = useState<SidebarLang>('en')
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  // ─── Auth Check ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    // Skip auth check for login page
+    if (pathname === '/portal/login') {
+      setIsAuthenticated(true)
+      return
+    }
+
+    const token = localStorage.getItem('accessToken')
+    if (!token) {
+      router.push('/portal/login')
+    } else {
+      setIsAuthenticated(true)
+    }
+  }, [pathname, router])
 
   // Get host navigation for sidebar
   const navGroups = getHostNavGroups(MOCK_HOST.slug)
 
   // Handle navigation
   const handleNavigate = useCallback((item: NavItem) => {
+    // Handle logout action
+    if (item.action && typeof item.action === 'object' && 'type' in item.action && item.action.type === 'logout') {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
+      localStorage.removeItem('organization')
+      router.push('/portal/login')
+      return
+    }
+
     if (item.href) {
       router.push(item.href)
     }
@@ -57,6 +84,20 @@ export function PortalLayoutClient({
       document.documentElement.removeAttribute('data-portal-theme')
     }
   }, [currentTheme])
+
+  // Show loading while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]">
+        <div className="animate-spin w-8 h-8 border-3 border-[#B5846D] border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  // For login page, render without sidebar
+  if (pathname === '/portal/login') {
+    return <>{children}</>
+  }
 
   return (
     <div className={`portal-layout theme-${currentTheme}`}>

@@ -36,6 +36,7 @@ export interface NavItem {
   action?: {                          // Custom action for Rently-style navigation
     navigateTo?: 'resort' | 'apartments';
     activeProject?: 'seaside' | 'eilat42';
+    type?: 'logout';                  // Action type for special actions like logout
   };
   children?: NavItem[];               // Sub-menu items
   badge?: string | number;            // Notification badge
