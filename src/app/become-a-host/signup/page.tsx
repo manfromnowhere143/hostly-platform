@@ -652,17 +652,6 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Styles */}
-      <style jsx global>{`
-        .direction-rtl { direction: rtl; }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slide-in-from-right { from { transform: translateX(10px); } to { transform: translateX(0); } }
-        @keyframes zoom-in { from { transform: scale(0.95); } to { transform: scale(1); } }
-        .animate-in { animation-duration: 500ms; animation-fill-mode: forwards; }
-        .fade-in { animation-name: fade-in; }
-        .slide-in-from-right { animation-name: slide-in-from-right; }
-        .zoom-in { animation-name: zoom-in; }
-      `}</style>
     </main>
   )
 }

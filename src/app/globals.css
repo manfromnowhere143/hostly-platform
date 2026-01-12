@@ -615,6 +615,38 @@ video {
   animation: slideUp 0.3s ease-out;
 }
 
+/* Additional animations for signup flow */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-right {
+  from { transform: translateX(10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes zoom-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.slide-in-from-right {
+  animation: slide-in-from-right 0.5s ease-out forwards;
+}
+
+.zoom-in {
+  animation: zoom-in 0.5s ease-out forwards;
+}
+
+.direction-rtl {
+  direction: rtl;
+}
+
 /* ─── Button Premium Styles ─────────────────────────────────────────────────── */
 .btn-premium {
   position: relative;
