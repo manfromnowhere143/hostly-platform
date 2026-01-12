@@ -1,0 +1,18 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS: COLORS
+   ═══════════════════════════════════════════════════════════════════════════════
+   Brand colors, accent colors, and semantic color tokens.
+   Theme-specific overrides are in /themes/*.css
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Brand Colors - Applied to .rently container */
+.rently {
+  /* Primary Brand - Velvet */
+  --velvet: #b5846d;
+  --velvet-light: #c9a08c;
+  --velvet-dark: #9a6d58;
+
+  /* Accent - Gold */
+  --gold: #d4af37;
+  --gold-light: #f4e4bc;
+}

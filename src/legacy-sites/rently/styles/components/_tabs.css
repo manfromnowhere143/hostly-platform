@@ -1,0 +1,87 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   COMPONENT: TABS
+   ═══════════════════════════════════════════════════════════════════════════════
+   Tab navigation for filtering and switching views.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Apartment Tabs */
+.apt-tabs {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.25rem;
+}
+
+.apt-tab {
+  padding: 0.6rem 1.5rem;
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.apt-tab:hover {
+  color: var(--text);
+}
+
+.apt-tab.active {
+  background: var(--velvet);
+  color: #fff;
+}
+
+.rently.rtl .apt-tab {
+  font-family: var(--font-hebrew);
+}
+
+/* Suite Tabs */
+.cb-suite-tabs {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.25rem;
+  opacity: 0;
+  animation: tabsReveal 0.6s ease 0.4s forwards;
+}
+
+.cb-suite-tab {
+  padding: 0.6rem 1.5rem;
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.cb-suite-tab:hover {
+  color: var(--text);
+}
+
+.cb-suite-tab.active {
+  background: var(--velvet);
+  color: #fff;
+}

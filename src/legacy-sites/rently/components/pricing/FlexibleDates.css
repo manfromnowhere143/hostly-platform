@@ -1,0 +1,475 @@
+/**
+ * FLEXIBLE DATES - STATE OF THE ART
+ * Elegant design aligned with Rently luxury aesthetic
+ * Full RTL/Hebrew support
+ */
+
+.flexible-dates {
+  --velvet: #b5846d;
+  --velvet-light: #c9a08c;
+  --velvet-dark: #9a6d58;
+  --gold: #d4af37;
+  --green: #16a34a;
+  --green-bg: rgba(34, 197, 94, 0.1);
+  --surface: #faf8f5;
+  --border: #e0d5c8;
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
+
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Loading state */
+.flexible-dates.loading .flex-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.flexible-dates.loading .flex-skeleton.header {
+  height: 60px;
+  margin-bottom: 16px;
+}
+
+.flexible-dates.loading .flex-skeleton.item {
+  height: 72px;
+  margin-bottom: 12px;
+}
+
+/* Refreshing state */
+.flexible-dates.refreshing {
+  animation: subtleRefresh 1.5s ease-in-out infinite;
+}
+
+@keyframes subtleRefresh {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* No alternatives state */
+.flexible-dates.no-alternatives {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.02));
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  padding: 16px 20px;
+}
+
+.flexible-dates.no-alternatives .flex-header.compact {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.flexible-dates.no-alternatives .flex-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 1.25rem;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+/* Header */
+.flex-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.flex-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(181, 132, 109, 0.15), rgba(181, 132, 109, 0.05));
+  border-radius: 8px;
+  color: var(--velvet);
+  flex-shrink: 0;
+}
+
+.flex-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.flex-icon.success {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.flex-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.flex-title h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 1px 0;
+}
+
+.flex-title p {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.flex-best-savings {
+  padding: 4px 8px;
+  background: var(--green-bg);
+  border-radius: 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+/* Current selection */
+.current-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.selection-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.selection-dates {
+  flex: 1;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.selection-price {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+/* Alternatives list */
+.alternatives-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Alternative card */
+.alternative-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: fadeInUp 0.4s ease backwards;
+  position: relative;
+}
+
+.alternative-card:hover {
+  border-color: var(--velvet);
+  box-shadow: 0 2px 8px rgba(181, 132, 109, 0.12);
+}
+
+.alternative-card.badge-best_value {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, white, var(--green-bg));
+}
+
+.alternative-card.badge-cheapest {
+  border-color: rgba(234, 179, 8, 0.3);
+  background: linear-gradient(135deg, white, rgba(234, 179, 8, 0.05));
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Badge */
+.alt-badge {
+  position: absolute;
+  top: -6px;
+  left: 12px;
+  padding: 2px 8px;
+  background: var(--green);
+  border-radius: 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+}
+
+.badge-cheapest .alt-badge {
+  background: #eab308;
+}
+
+/* Dates */
+.alt-dates {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.alt-date-range {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.alt-nights {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  color: #999;
+}
+
+/* Pricing */
+.alt-pricing {
+  text-align: right;
+  min-width: 70px;
+}
+
+.alt-total {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.alt-per-night {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  color: #999;
+}
+
+/* Savings */
+.alt-savings {
+  min-width: 70px;
+  text-align: center;
+}
+
+.savings-amount {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--green-bg);
+  border-radius: 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* Select indicator */
+.alt-select {
+  color: #ccc;
+  transition: color 0.2s ease;
+}
+
+.alternative-card:hover .alt-select {
+  color: var(--velvet);
+}
+
+/* Show more button */
+.show-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--velvet);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.show-more-btn:hover {
+  background: rgba(181, 132, 109, 0.05);
+  border-color: var(--velvet);
+}
+
+.show-more-btn svg {
+  transition: transform 0.3s ease;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   RTL / HEBREW SUPPORT
+   ════════════════════════════════════════════════════════════════════════════════ */
+
+[dir="rtl"] .flexible-dates,
+.flexible-dates.rtl {
+  text-align: right;
+}
+
+[dir="rtl"] .flex-header,
+.flexible-dates.rtl .flex-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .current-selection,
+.flexible-dates.rtl .current-selection {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .alternative-card,
+.flexible-dates.rtl .alternative-card {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .alt-badge,
+.flexible-dates.rtl .alt-badge {
+  left: auto;
+  right: 16px;
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .alt-pricing,
+.flexible-dates.rtl .alt-pricing {
+  text-align: left;
+}
+
+[dir="rtl"] .flex-title,
+.flexible-dates.rtl .flex-title {
+  text-align: right;
+}
+
+[dir="rtl"] .alt-dates,
+.flexible-dates.rtl .alt-dates {
+  text-align: right;
+}
+
+/* Badge icon */
+.badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Chevron icon */
+.chevron-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.chevron-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.chevron-icon.expanded svg {
+  transform: rotate(180deg);
+}
+
+/* Alt select icon */
+.alt-select svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  .flexible-dates {
+    padding: 10px;
+  }
+
+  .flex-header {
+    flex-wrap: wrap;
+  }
+
+  .flex-best-savings {
+    width: 100%;
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .current-selection {
+    flex-wrap: wrap;
+  }
+
+  .selection-dates {
+    order: 2;
+    flex-basis: 100%;
+  }
+
+  .alternative-card {
+    flex-wrap: wrap;
+  }
+
+  .alt-dates {
+    flex-basis: 60%;
+  }
+
+  .alt-pricing {
+    flex-basis: 35%;
+  }
+
+  .alt-savings {
+    flex-basis: 100%;
+    margin-top: 6px;
+  }
+
+  .alt-select {
+    display: none;
+  }
+
+  /* RTL responsive */
+  [dir="rtl"] .flex-header,
+  .flexible-dates.rtl .flex-header {
+    flex-direction: row;
+  }
+
+  [dir="rtl"] .alternative-card,
+  .flexible-dates.rtl .alternative-card {
+    flex-direction: row;
+  }
+}

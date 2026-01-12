@@ -1,0 +1,18 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   THEME: WHITE
+   ═══════════════════════════════════════════════════════════════════════════════
+   Pure & Clean - Minimal white theme
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.rently.white {
+  --bg: #ffffff;
+  --bg-alt: #fafafa;
+  --text: #1a1a1a;
+  --text-muted: #666;
+  --border: rgba(0, 0, 0, 0.08);
+  --contact-bg: #fafafa;
+  --contact-text: #1a1a1a;
+  --contact-muted: #666;
+  background: var(--bg);
+  color: var(--text);
+}

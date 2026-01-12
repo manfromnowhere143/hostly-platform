@@ -1,0 +1,19 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   THEME: CREAM
+   ═══════════════════════════════════════════════════════════════════════════════
+   Warm & Elegant - Original light theme
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.rently.cream,
+.rently.light {
+  --bg: #faf5f0;
+  --bg-alt: #f5efe8;
+  --text: #2d2520;
+  --text-muted: #8b7355;
+  --border: rgba(160, 110, 90, 0.12);
+  --contact-bg: #f5efe8;
+  --contact-text: #2d2520;
+  --contact-muted: #8b7355;
+  background: var(--bg);
+  color: var(--text);
+}

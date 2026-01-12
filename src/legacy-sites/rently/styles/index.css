@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RENTLY LUXURY - MAIN STYLESHEET
+   ═══════════════════════════════════════════════════════════════════════════════
+   State-of-the-art modular CSS architecture.
+   Import order matters for proper cascade.
+   NOTE: Google Fonts @import MUST be first (before any CSS rules)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   0. GOOGLE FONTS - Must be first (Turbopack/Next.js requirement)
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@200;300;400&family=Heebo:wght@200;300;400;500&family=Frank+Ruhl+Libre:wght@300;400;500&family=Rubik:wght@300;400;500&family=Assistant:wght@200;300;400;500&family=Secular+One&family=Suez+One&display=swap');
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   1. TOKENS - Design system variables
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './tokens/_colors.css';
+@import './tokens/_typography.css';
+@import './tokens/_spacing.css';
+@import './tokens/_shadows.css';
+@import './tokens/_animations.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   2. BASE - Reset and global styles (fonts moved to top)
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './base/_reset.css';
+@import './base/_global.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   3. THEMES - Color schemes
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './themes/_white.css';
+@import './themes/_cream.css';
+@import './themes/_petra.css';
+@import './themes/_dark.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   4. ANIMATIONS - Keyframes and transitions
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './animations/_keyframes.css';
+@import './animations/_transitions.css';
+@import './animations/_scroll-reveal.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   5. LAYOUT - App structure and containers
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './layout/_app-layout.css';
+@import './layout/_header.css';
+@import './layout/_sidebar.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   6. COMPONENTS - Reusable UI components
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './components/_loading.css';
+@import './components/_hero.css';
+@import './components/_cards.css';
+@import './components/_modal.css';
+@import './components/_tabs.css';
+@import './components/_buttons.css';
+@import './components/_forms.css';
+@import './components/_floating-controls.css';
+@import './components/_carousel.css';
+@import './components/_stats.css';
+@import './components/_amenities.css';
+@import './components/_contact.css';
+@import './components/_footer.css';
+@import './components/_booking.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   7. PAGES - Page-specific styles
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './pages/_resort.css';
+@import './pages/_apartments.css';
+@import './pages/_suite.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   8. UTILITIES - Helpers and enhancements
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './utilities/_gpu.css';
+@import './utilities/_accessibility.css';
+@import './utilities/_cursor.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   9. RTL - Right-to-left language support
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './rtl/_rtl.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────────
+   10. RESPONSIVE - Mobile overrides (MUST be last)
+   ───────────────────────────────────────────────────────────────────────────────── */
+@import './responsive/_breakpoints.css';
+@import './responsive/_mobile.css';

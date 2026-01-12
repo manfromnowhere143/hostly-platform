@@ -1,0 +1,198 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UTILITIES: GPU ACCELERATION - STATE OF THE ART
+   ═══════════════════════════════════════════════════════════════════════════════
+   60fps performance optimizations for buttery smooth animations.
+
+   Techniques:
+   - GPU compositing via transform3d
+   - CSS containment for paint isolation
+   - will-change for animation prep
+   - content-visibility for lazy rendering
+   - touch-action for scroll optimization
+   - prefers-reduced-motion for accessibility
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── GPU Compositing Layer ─────────────────────────────────────────────────── */
+.rently,
+.permanent-sidebar,
+.main-content,
+.cb-apartments,
+.cb-page,
+.loading-overlay,
+.cb-suite-modal {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* ─── CSS Containment - Paint Isolation ─────────────────────────────────────── */
+.main-content { contain: layout; }
+.cb-room-card { contain: layout style paint; }
+.cb-section { contain: layout style; }
+.apt-card { contain: layout style; }
+.apt-scroll { contain: layout; }
+
+/* ─── Will-Change Hints (applied sparingly) ─────────────────────────────────── */
+.page-transition-overlay,
+.loading-overlay,
+.ps-backdrop,
+.booking-bar-overlay {
+  will-change: opacity, visibility;
+}
+
+.ps-nav-children,
+.ps-dropdown,
+.ps-nav-popup {
+  will-change: transform, opacity;
+}
+
+/* ─── Stacking Context Isolation ────────────────────────────────────────────── */
+.cb-grid,
+.cb-sections,
+.apt-scroll,
+.ps-controls {
+  isolation: isolate;
+}
+
+/* ─── Image & Video Optimization - State of the Art ─────────────────────────── */
+img, video {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 200px;
+}
+
+.apt-card-image img,
+.carousel-item img {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px 200px;
+}
+
+/* Hero & Gallery Videos - Maximum Smoothness */
+.cb-hero-video,
+.cb-midpage-video-player,
+.cb-closing-video-player,
+video {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+  image-rendering: optimizeQuality;
+  -webkit-image-rendering: optimizeQuality;
+}
+
+/* Gallery Images - Silky Smooth Transitions */
+.cb-gallery-item,
+.cb-seaside-scroll-item,
+.cb-seaside-hero-image,
+.cb-midpage-video-container {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Smooth Image Containers */
+.cb-gallery-item img,
+.cb-gallery-item > div,
+.cb-seaside-scroll-item img,
+.cb-seaside-scroll-item > div,
+.cb-seaside-hero-image img,
+.cb-seaside-hero-image > div {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* ─── GPU Acceleration for Interactive Elements ─────────────────────────────── */
+.apt-card,
+.apt-hero-video,
+.hero-video,
+.carousel-item,
+.architecture-image,
+.amenities-image,
+.experience-card,
+.contact-card,
+.modal-content,
+.reveal,
+.stagger-reveal > * {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* ─── Touch Action Optimization ─────────────────────────────────────────────── */
+/* Horizontal scrollers - prevent vertical scroll interference */
+.apt-scroll,
+.apt-tabs,
+.carousel-container {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Vertical scrollers */
+.rently,
+.main-content,
+.ps-nav {
+  touch-action: pan-y;
+}
+
+/* Interactive elements - fast tap response */
+button, a, .apt-card, .ps-nav-item, .ps-control-btn {
+  touch-action: manipulation;
+}
+
+/* ─── Scroll Behavior ───────────────────────────────────────────────────────── */
+.apt-scroll,
+.carousel-container {
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
+}
+
+/* ─── Reduced Motion - Accessibility ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal,
+  .stagger-reveal > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ─── High Contrast Mode Support ────────────────────────────────────────────── */
+@media (prefers-contrast: high) {
+  .ps-nav-item.active::after,
+  .apt-tab.active {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Print Optimization ────────────────────────────────────────────────────── */
+@media print {
+  .permanent-sidebar,
+  .mobile-hamburger,
+  .float-nav-home,
+  .float-nav-apartments,
+  .float-control-theme,
+  .float-control-lang {
+    display: none !important;
+  }
+
+  .main-content {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}

@@ -148,7 +148,10 @@ export async function GET(
       if (boomDaysRates && boomDaysRates[dateStr]) {
         const boomDay = boomDaysRates[dateStr]
         // Boom returns shekels, multiply by 100 for agorot
-        price = (boomDay.price || property.basePrice) * 100
+        // Safety check: if price > 10000, it's likely already in agorot
+        const rawPrice = boomDay.price || 0
+        const boomPrice = rawPrice > 10000 ? rawPrice : rawPrice * 100
+        price = boomPrice || property.basePrice // property.basePrice is already in agorot
         minNights = boomDay.minNights || property.minNights
 
         // Boom says unavailable - override Hostly
@@ -156,14 +159,15 @@ export async function GET(
           isBlocked = true
         }
       } else {
-        // Fallback to Hostly pricing (also convert to agorot)
+        // Fallback to Hostly pricing (basePrice is ALREADY in agorot)
         const isWeekend = date.getDay() === 5 || date.getDay() === 6
         if (calendarDay?.price) {
-          price = calendarDay.price * 100
+          // Calendar day price is in agorot
+          price = calendarDay.price
         } else if (isWeekend) {
-          price = Math.round(property.basePrice * 1.2) * 100
+          price = Math.round(property.basePrice * 1.2)
         } else {
-          price = property.basePrice * 100
+          price = property.basePrice
         }
       }
 

@@ -1,0 +1,177 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ANIMATIONS: KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════════════
+   All @keyframes definitions in one place.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Basic Effects */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Hero Animations */
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroLineReveal {
+  from { opacity: 0; transform: scaleY(0); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes heroExpandLine {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+/* General Reveal */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll & Pulse */
+@keyframes scrollPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes lineGlow {
+  0%, 100% { opacity: 0.5; height: 50px; }
+  50% { opacity: 1; height: 60px; }
+}
+
+@keyframes lineExpand {
+  0%, 100% { width: 60px; opacity: 0.5; }
+  50% { width: 100px; opacity: 1; }
+}
+
+@keyframes diamondPulse {
+  0%, 100% { transform: rotate(45deg) scale(1); }
+  50% { transform: rotate(45deg) scale(1.2); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+}
+
+/* Carousel */
+@keyframes scrollCarousel {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+/* UI Elements */
+@keyframes tabsReveal {
+  from { opacity: 0; transform: translateX(-50%) translateY(15px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gridFadeIn {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Loading Page */
+@keyframes loadingLineReveal {
+  from { height: 0; opacity: 0; }
+  to { height: 60px; opacity: 1; }
+}
+
+@keyframes loadingLogoReveal {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes loadingLetterReveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes loadingDividerReveal {
+  from { width: 0; opacity: 0; }
+  to { width: 80px; opacity: 1; }
+}
+
+@keyframes loadingTextReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes loadingBottomReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Suite Page */
+@keyframes suiteImageReveal {
+  0% { opacity: 0; transform: scale(1.1); filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes suiteInfoReveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bookBtnReveal {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes arrowReveal {
+  to { opacity: 1; }
+}
+
+@keyframes dotsReveal {
+  to { opacity: 1; }
+}
+
+@keyframes suiteModalOpen {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes suiteImageSwitch {
+  0% { opacity: 0; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Petra Background */
+@keyframes petraBreath {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.85; }
+}

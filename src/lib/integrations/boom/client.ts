@@ -32,7 +32,16 @@ export interface BoomListing {
   id: number
   title: string
   nickname?: string
-  pictures: Array<{ picture: string; nickname?: string }>
+  pictures: Array<{
+    picture?: string
+    original?: string
+    thumbnail?: string
+    nickname?: string
+    _id?: string
+    width?: number
+    height?: number
+    size?: number
+  }>
   amenities: string[]
   beds: number
   baths: number

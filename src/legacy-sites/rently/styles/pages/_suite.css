@@ -1,0 +1,106 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PAGE: SUITE
+   ═══════════════════════════════════════════════════════════════════════════════
+   Full-page suite detail view.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.cb-suite-page {
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Video Controls Overlay */
+.cb-suite-controls {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cb-suite-media:hover .cb-suite-controls {
+  opacity: 1;
+}
+
+.cb-suite-control-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.cb-suite-control-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.cb-suite-control-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #fff;
+}
+
+/* Modal uses same showcase layout - DESKTOP ONLY */
+@media (min-width: 481px) {
+  .cb-suite-modal .cb-suite-showcase {
+    max-width: 1300px;
+    width: 85%;
+  }
+
+  .cb-suite-modal .cb-suite-media {
+    max-height: 75vh;
+  }
+
+  /* Image animation on change */
+  .cb-suite-modal .cb-suite-image {
+    animation: suiteImageSwitch 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Ensure nav dots are visible in modal */
+  .cb-suite-modal .cb-suite-nav {
+    bottom: 6rem;
+  }
+
+  /* Book button position in modal */
+  .cb-suite-modal .cb-suite-book-btn {
+    bottom: 2rem;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  /* Arrows in modal */
+  .cb-suite-modal .cb-suite-arrow {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 1024px) {
+  .cb-suite-modal .cb-suite-showcase {
+    width: 95%;
+    padding: 5rem 1rem 10rem;
+  }
+
+  .cb-suite-modal .cb-suite-media {
+    max-height: 45vh;
+  }
+
+  .cb-suite-close {
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+  }
+}

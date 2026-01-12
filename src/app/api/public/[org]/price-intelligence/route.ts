@@ -71,6 +71,7 @@ interface PriceInsight {
 
 const QuerySchema = z.object({
   propertyId: z.string().optional(),
+  boomId: z.coerce.number().int().positive().optional(), // Direct Boom PMS ID
   checkIn: z.string().optional(),
   checkOut: z.string().optional(),
   guests: z.coerce.number().int().positive().default(2),
@@ -283,13 +284,36 @@ function findDateAlternatives(
   // ═══════════════════════════════════════════════════════════════════════════
   // CRITICAL: Filter for FULLY AVAILABLE alternatives FIRST
   // Only suggest dates where ALL nights are actually bookable
+  // Double-check each date individually to catch any edge cases
   // ═══════════════════════════════════════════════════════════════════════════
   const fullyAvailable = alternatives.filter(a => {
+    // First check: availability flag must be 'full'
     if (a.availability !== 'full') {
-      // Debug: Log which alternatives are being filtered out
       console.log(`[Price Intelligence] Filtered out ${a.checkIn} - ${a.checkOut}: availability=${a.availability}`)
       return false
     }
+
+    // Second check: verify EACH date in range has a pricePoint AND is available
+    const checkInDate = parseISO(a.checkIn)
+    const checkOutDate = parseISO(a.checkOut)
+
+    for (let d = checkInDate; d < checkOutDate; d = addDays(d, 1)) {
+      const dateStr = format(d, 'yyyy-MM-dd')
+      const pricePoint = pricePoints.find(p => p.date === dateStr)
+
+      // If no pricePoint exists for this date, it's not bookable
+      if (!pricePoint) {
+        console.log(`[Price Intelligence] Filtered out ${a.checkIn} - ${a.checkOut}: no data for ${dateStr}`)
+        return false
+      }
+
+      // If pricePoint says not available, filter out
+      if (!pricePoint.available) {
+        console.log(`[Price Intelligence] Filtered out ${a.checkIn} - ${a.checkOut}: ${dateStr} not available`)
+        return false
+      }
+    }
+
     return true
   })
 
@@ -348,7 +372,7 @@ export async function GET(
       )
     }
 
-    const { propertyId, checkIn, checkOut, guests, flexDays } = validation.data
+    const { propertyId, boomId: directBoomId, checkIn, checkOut, guests, flexDays } = validation.data
 
     // Find organization
     const organization = await prisma.organization.findUnique({
@@ -362,33 +386,58 @@ export async function GET(
       )
     }
 
-    // Get property (or all properties if not specified)
-    const properties = await prisma.property.findMany({
-      where: {
-        organizationId: organization.id,
-        status: 'active',
-        ...(propertyId ? { id: propertyId } : {}),
-      },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        metadata: true,
-        basePrice: true,
-        minNights: true,
-      },
-    })
+    // ════════════════════════════════════════════════════════════════════════════
+    // PROPERTY RESOLUTION: Support both propertyId (DB) and boomId (PMS) lookups
+    // ════════════════════════════════════════════════════════════════════════════
+    let property: { id: string; slug: string; name: string; metadata: any; basePrice: number; minNights: number } | null = null
+    let boomId: number | undefined = directBoomId
 
-    if (properties.length === 0) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_PROPERTIES', message: 'No properties found' } },
-        { status: 404 }
-      )
+    if (directBoomId) {
+      // Direct Boom ID provided - use it directly (for curated listings)
+      // Try to find matching property in DB, but don't require it
+      const matchingProperty = await prisma.property.findFirst({
+        where: {
+          organizationId: organization.id,
+          status: 'active',
+          metadata: { path: ['boomId'], equals: directBoomId },
+        },
+        select: { id: true, slug: true, name: true, metadata: true, basePrice: true, minNights: true },
+      })
+
+      if (matchingProperty) {
+        property = matchingProperty
+      } else {
+        // Create a virtual property for curated listings not in DB
+        property = {
+          id: `boom_${directBoomId}`,
+          slug: `boom-${directBoomId}`,
+          name: `Property ${directBoomId}`,
+          metadata: { boomId: directBoomId },
+          basePrice: 45000, // Default ₪450 in agorot
+          minNights: 1,
+        }
+      }
+    } else {
+      // Get property from database
+      const properties = await prisma.property.findMany({
+        where: {
+          organizationId: organization.id,
+          status: 'active',
+          ...(propertyId ? { id: propertyId } : {}),
+        },
+        select: { id: true, slug: true, name: true, metadata: true, basePrice: true, minNights: true },
+      })
+
+      if (properties.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NO_PROPERTIES', message: 'No properties found' } },
+          { status: 404 }
+        )
+      }
+
+      property = properties[0]
+      boomId = (property.metadata as any)?.boomId as number | undefined
     }
-
-    // For now, use first property (or specified one)
-    const property = properties[0]
-    const boomId = (property.metadata as any)?.boomId as number | undefined
 
     if (!boomId) {
       return NextResponse.json(
@@ -396,6 +445,8 @@ export async function GET(
         { status: 400 }
       )
     }
+
+    console.log(`[Price Intelligence] Fetching data for Boom ID: ${boomId}`)
 
     // Fetch Boom listing with days_rates
     const listing = await boomSyncService.getListingWithPricing(boomId)
@@ -462,7 +513,11 @@ export async function GET(
       const notBlockedByReservation = !blockedByReservation.has(dateStr)
       const isAvailable = boomAvailable && notBlockedByReservation
 
-      const priceInAgorot = ((dayRate?.price || property.basePrice) * 100)
+      // Boom returns shekels, property.basePrice is already in agorot
+      // Safety check: if Boom price > 10000, it's likely already in agorot
+      const rawBoomPrice = dayRate?.price || 0
+      const boomPriceInAgorot = rawBoomPrice > 10000 ? rawBoomPrice : rawBoomPrice * 100
+      const priceInAgorot = dayRate ? boomPriceInAgorot : property.basePrice
 
       if (dayRate) {
         allPrices.push(priceInAgorot)

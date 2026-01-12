@@ -22,10 +22,16 @@
     "db:health": "curl -s http://localhost:3000/api/health/db | jq"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "prisma"]
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma"
+    ]
   },
   "dependencies": {
     "@prisma/client": "^6.3.0",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.6.1",
     "@upstash/redis": "^1.36.1",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",

@@ -8,6 +8,32 @@ const nextConfig: NextConfig = {
   // Creates self-contained build in .next/standalone
   output: "standalone",
 
+  // Allow external images from Boom/Guesty CDN, Cloudinary, and Vercel Blob
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'assets.guesty.com',
+        pathname: '/image/upload/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'xkmvvdvft005bytr.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+    ],
+  },
+
   // Include Prisma client in standalone output
   // Needed because pnpm uses a different node_modules structure
   outputFileTracingIncludes: {

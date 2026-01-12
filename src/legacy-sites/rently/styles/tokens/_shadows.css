@@ -1,0 +1,17 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS: SHADOWS
+   ═══════════════════════════════════════════════════════════════════════════════
+   Elevation system using box shadows.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.rently {
+  /* Elevation Scale */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 30px 80px rgba(0, 0, 0, 0.15);
+
+  /* Sidebar Shadow */
+  --shadow-sidebar: 3px 0 15px rgba(0, 0, 0, 0.06);
+}

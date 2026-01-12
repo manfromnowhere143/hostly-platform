@@ -1,0 +1,78 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ANIMATIONS: SCROLL REVEAL
+   ═══════════════════════════════════════════════════════════════════════════════
+   Scroll-triggered reveal animations for elements entering the viewport.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Basic reveal - GPU Accelerated */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 25px, 0);
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Smooth fade only (for images) */
+.reveal-fade {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+.reveal-fade.visible {
+  opacity: 1;
+}
+
+/* Scale reveal (for hero elements) */
+.reveal-scale {
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.96);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* Delay modifiers */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.15s; }
+.reveal-delay-3 { transition-delay: 0.2s; }
+.reveal-delay-4 { transition-delay: 0.25s; }
+
+/* Stagger children reveal */
+.stagger-reveal > * {
+  opacity: 0;
+  transform: translate3d(0, 15px, 0);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.stagger-reveal.visible > *:nth-child(1) { opacity: 1; transform: translate3d(0, 0, 0); transition-delay: 0.05s; }
+.stagger-reveal.visible > *:nth-child(2) { opacity: 1; transform: translate3d(0, 0, 0); transition-delay: 0.1s; }
+.stagger-reveal.visible > *:nth-child(3) { opacity: 1; transform: translate3d(0, 0, 0); transition-delay: 0.15s; }
+.stagger-reveal.visible > *:nth-child(4) { opacity: 1; transform: translate3d(0, 0, 0); transition-delay: 0.2s; }
+
+/* Line reveal */
+.line-reveal {
+  transform: scaleX(0);
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.line-reveal.visible {
+  transform: scaleX(1);
+}

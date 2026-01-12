@@ -1,0 +1,21 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   THEME: PETRA
+   ═══════════════════════════════════════════════════════════════════════════════
+   Ancient Stone from Jordan - Warm sandstone tones
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.rently.petra {
+  --bg: #e8d5c4;
+  --bg-alt: #dcc7b3;
+  --text: #3d2b1f;
+  --text-muted: #6b4d3a;
+  --border: rgba(120, 70, 50, 0.15);
+  --velvet: #a05a3c;
+  --velvet-light: #c4856a;
+  --velvet-dark: #7a4530;
+  --contact-bg: #dcc7b3;
+  --contact-text: #3d2b1f;
+  --contact-muted: #6b4d3a;
+  background: var(--bg);
+  color: var(--text);
+}

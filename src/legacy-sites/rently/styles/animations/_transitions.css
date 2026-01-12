@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ANIMATIONS: TRANSITIONS - STATE OF THE ART
+   ═══════════════════════════════════════════════════════════════════════════════
+   Apple/Uber level transitions. Material Design standard easing.
+
+   EASING: cubic-bezier(0.4, 0, 0.2, 1) - Material Design standard
+   DURATIONS:
+     - Micro: 200ms (buttons, toggles, small UI)
+     - Normal: 300ms (most interactions)
+     - Page: 400ms (page transitions, modals)
+
+   RULES:
+     - Only animate transform and opacity (GPU accelerated)
+     - Add will-change before animation, remove after
+     - Stagger multiple elements (40ms delays)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── CSS Custom Properties for Transitions ─────────────────────────────────── */
+:root {
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --duration-micro: 200ms;
+  --duration-normal: 300ms;
+  --duration-page: 400ms;
+}
+
+/* ─── Utility Classes ───────────────────────────────────────────────────────── */
+.transition-micro {
+  transition: transform var(--duration-micro) var(--ease-out),
+              opacity var(--duration-micro) var(--ease-out);
+}
+
+.transition-normal {
+  transition: transform var(--duration-normal) var(--ease-out),
+              opacity var(--duration-normal) var(--ease-out);
+}
+
+.transition-page {
+  transition: transform var(--duration-page) var(--ease-out),
+              opacity var(--duration-page) var(--ease-out);
+}
+
+/* ─── Page Transition Overlay ───────────────────────────────────────────────── */
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+
+  /* GPU layer */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  /* Fade out transition */
+  transition:
+    opacity var(--duration-page) var(--ease-out),
+    visibility 0s linear var(--duration-page);
+}
+
+.page-transition-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  will-change: opacity;
+
+  /* Fade in transition */
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    visibility 0s linear 0s;
+}
+
+/* ─── Page Content Slide Transition ─────────────────────────────────────────── */
+.permanent-sidebar,
+.main-content,
+.floating-controls,
+.cb-arch-grid,
+.top-header {
+  /* Base state - ready for animation */
+  transform: translateY(0) translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  /* Smooth return transition */
+  transition: transform var(--duration-page) var(--ease-out);
+}
+
+/* Transitioning state - slide down */
+.rently.page-transitioning .permanent-sidebar,
+.rently.page-transitioning .main-content,
+.rently.page-transitioning .floating-controls,
+.rently.page-transitioning .cb-arch-grid,
+.rently.page-transitioning .top-header {
+  transform: translateY(30px) translateZ(0);
+  opacity: 0;
+  will-change: transform, opacity;
+  transition:
+    transform var(--duration-page) var(--ease-out),
+    opacity var(--duration-normal) var(--ease-out);
+}
+
+/* Staggered delays for elements */
+.rently.page-transitioning .top-header {
+  transition-delay: 0ms;
+}
+
+.rently.page-transitioning .permanent-sidebar {
+  transition-delay: 40ms;
+}
+
+.rently.page-transitioning .main-content {
+  transition-delay: 80ms;
+}
+
+.rently.page-transitioning .floating-controls {
+  transition-delay: 120ms;
+}
+
+/* ─── Loading Overlay ───────────────────────────────────────────────────────── */
+.loading-overlay {
+  transition: opacity 600ms var(--ease-out);
+}
+
+.loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}

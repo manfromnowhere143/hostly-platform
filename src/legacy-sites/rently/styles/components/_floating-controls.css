@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   COMPONENT: FLOATING CONTROLS - STATE OF THE ART
+   ═══════════════════════════════════════════════════════════════════════════════
+   Theme switcher and language selector with GPU-accelerated animations.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.floating-controls {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  z-index: 200;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rently.rtl .floating-controls {
+  right: auto;
+  left: 1.5rem;
+}
+
+/* Mobile styles moved to _mobile.css for consistency */
+
+.float-control-wrapper {
+  position: relative;
+  /* Isolate stacking context to prevent visual artifacts */
+  isolation: isolate;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   THEME TRIGGER - Plus icon with color gradient
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.float-theme-trigger {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid rgba(160, 110, 90, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* GPU acceleration to prevent flash */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.float-theme-trigger:hover {
+  transform: scale(1.08) translateZ(0);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+.float-theme-trigger.open {
+  transform: rotate(45deg) translateZ(0);
+}
+
+/* Plus icon with 4 color segments */
+.float-plus-h,
+.float-plus-v {
+  position: absolute;
+  display: flex;
+  overflow: hidden;
+  border-radius: 1px;
+  /* Prevent flash */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.float-plus-h {
+  width: 18px;
+  height: 3px;
+  flex-direction: row;
+}
+
+.float-plus-v {
+  width: 3px;
+  height: 18px;
+  flex-direction: column;
+}
+
+.float-plus-h span,
+.float-plus-v span {
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   THEME DROPDOWN - 4 colors in 2x2 grid - opens to the left
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.float-theme-dropdown {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 12px);
+  transform: translateY(-50%) scale(0.95);
+  transform-origin: right center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: var(--bg);
+  border: 1px solid rgba(160, 110, 90, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Separate transitions for smooth close */
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+
+.rently.rtl .float-theme-dropdown {
+  right: auto;
+  left: calc(100% + 12px);
+  transform-origin: left center;
+}
+
+.float-theme-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+  /* Instant visibility on open, smooth opacity/transform */
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0s;
+}
+
+.float-color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  /* Prevent any flash */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.float-color-btn:hover {
+  transform: scale(1.15);
+}
+
+.float-color-btn.active {
+  border-color: var(--velvet);
+  box-shadow: 0 0 0 3px rgba(181, 132, 109, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LANGUAGE TRIGGER
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.float-lang-trigger {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid rgba(160, 110, 90, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* GPU acceleration to prevent flash */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.float-lang-trigger:hover {
+  transform: scale(1.08) translateZ(0);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+.float-lang-trigger svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text);
+  transition: transform 0.3s ease;
+  /* Prevent flash */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.float-lang-trigger.open svg {
+  transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LANGUAGE DROPDOWN - opens to the left
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.float-lang-dropdown {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 12px);
+  transform: translateY(-50%) scale(0.95);
+  transform-origin: right center;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  background: var(--bg);
+  border: 1px solid rgba(160, 110, 90, 0.12);
+  border-radius: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Separate transitions for smooth close */
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+
+.rently.rtl .float-lang-dropdown {
+  right: auto;
+  left: calc(100% + 12px);
+  transform-origin: left center;
+}
+
+.float-lang-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+  /* Instant visibility on open, smooth opacity/transform */
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0s;
+}
+
+.float-flag-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  /* Prevent any flash */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.float-flag-btn:hover {
+  transform: scale(1.15);
+  background: rgba(160, 110, 90, 0.08);
+}
+
+.float-flag-btn.active {
+  border-color: var(--velvet);
+  background: rgba(181, 132, 109, 0.15);
+}
+
+/* Mobile floating controls styles are in _mobile.css */
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   WHATSAPP FLOATING BUTTON
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.whatsapp {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  box-shadow:
+    0 4px 20px rgba(37, 211, 102, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rently.rtl .whatsapp {
+  right: auto;
+  left: 1.5rem;
+}
+
+.whatsapp:hover {
+  transform: scale(1.1) translateZ(0);
+  box-shadow:
+    0 6px 25px rgba(37, 211, 102, 0.5),
+    0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.whatsapp:active {
+  transform: scale(0.95) translateZ(0);
+}
+
+.whatsapp svg {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+}
+
+/* Mobile adjustments - above bottom nav */
+@media (max-width: 1024px) {
+  .whatsapp {
+    bottom: calc(140px + env(safe-area-inset-bottom));
+    right: 16px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .rently.rtl .whatsapp {
+    right: auto;
+    left: 16px;
+  }
+
+  .whatsapp svg {
+    width: 26px;
+    height: 26px;
+  }
+}

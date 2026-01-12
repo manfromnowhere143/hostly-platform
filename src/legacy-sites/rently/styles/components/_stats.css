@@ -1,0 +1,284 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   COMPONENT: STATS - Edge of Elegance
+   ═══════════════════════════════════════════════════════════════════════════════
+   Sophisticated statistics display with refined typography and animations.
+   Making history in elegance and design.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Main Stats Section ─────────────────────────────────────────────────────── */
+
+.cb-stats {
+  position: relative;
+  padding: 100px 60px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* Elegant decorative lines */
+.cb-stats::before,
+.cb-stats::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(180deg, transparent, rgba(180, 160, 140, 0.25), transparent);
+}
+
+.cb-stats::before {
+  top: 20px;
+}
+
+.cb-stats::after {
+  bottom: 20px;
+}
+
+/* Stats Grid */
+.cb-stats-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Individual Stat */
+.cb-stat {
+  text-align: center;
+  position: relative;
+  padding: 0 20px;
+
+  /* GPU acceleration for smooth animations */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Stat Value - Elegant Typography */
+.cb-stat-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 200;
+  font-style: italic;
+  color: var(--velvet);
+  line-height: 1;
+  letter-spacing: 0.02em;
+
+  /* Smooth transitions */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.4s ease;
+  will-change: transform;
+}
+
+.cb-stat:hover .cb-stat-value {
+  transform: scale(1.08);
+}
+
+.rently.rtl .cb-stat-value {
+  font-family: var(--font-hebrew-display);
+  font-style: normal;
+}
+
+/* Stat Label - Refined */
+.cb-stat-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 12px;
+
+  /* Smooth fade */
+  opacity: 0.8;
+  transition: opacity 0.4s ease, letter-spacing 0.4s ease;
+}
+
+.cb-stat:hover .cb-stat-label {
+  opacity: 1;
+  letter-spacing: 0.3em;
+}
+
+.rently.rtl .cb-stat-label {
+  font-family: var(--font-hebrew);
+  letter-spacing: 0.1em;
+}
+
+.rently.rtl .cb-stat:hover .cb-stat-label {
+  letter-spacing: 0.15em;
+}
+
+/* Elegant Divider */
+.cb-stat-divider {
+  width: 1px;
+  height: 80px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(180, 160, 140, 0.3) 20%,
+    rgba(180, 160, 140, 0.3) 80%,
+    transparent 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ─── Reveal Animation ─────────────────────────────────────────────────────── */
+
+.cb-stat.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cb-stat.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cb-stat.reveal:nth-child(1) { transition-delay: 0s; }
+.cb-stat.reveal:nth-child(3) { transition-delay: 0.15s; }
+.cb-stat.reveal:nth-child(5) { transition-delay: 0.3s; }
+
+/* ─── Dark Theme ─────────────────────────────────────────────────────────────── */
+
+.rently.dark .cb-stats {
+  background: var(--bg);
+}
+
+.rently.dark .cb-stats::before,
+.rently.dark .cb-stats::after {
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.rently.dark .cb-stat-divider {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0.15) 80%,
+    transparent 100%
+  );
+}
+
+/* ─── Mobile Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .cb-stats {
+    padding: 70px 30px;
+  }
+
+  .cb-stats::before,
+  .cb-stats::after {
+    height: 40px;
+  }
+
+  .cb-stats::before {
+    top: 15px;
+  }
+
+  .cb-stats::after {
+    bottom: 15px;
+  }
+
+  .cb-stats-grid {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .cb-stat-divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(180, 160, 140, 0.3) 20%,
+      rgba(180, 160, 140, 0.3) 80%,
+      transparent 100%
+    );
+  }
+
+  .cb-stat-value {
+    font-size: 3rem;
+  }
+
+  .cb-stat-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+  }
+
+  .cb-stat:hover .cb-stat-label {
+    letter-spacing: 0.25em;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cb-stats {
+    padding: 80px 40px;
+  }
+
+  .cb-stats-grid {
+    gap: 50px;
+  }
+
+  .cb-stat-divider {
+    height: 60px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ARCHITECTURE STATS - Legacy Support
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.architecture-stats {
+  display: flex;
+  gap: 3.5rem;
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.architecture-stat {
+  text-align: center;
+  position: relative;
+}
+
+.architecture-stat::after {
+  content: '';
+  position: absolute;
+  right: -1.75rem;
+  top: 50%;
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+  transform: translateY(-50%);
+}
+
+.architecture-stat:last-child::after { display: none; }
+
+.architecture-stat-value {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--velvet);
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.architecture-stat:hover .architecture-stat-value { transform: scale(1.1); }
+
+.architecture-stat-label {
+  font-size: 0.5rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 0.6rem;
+}

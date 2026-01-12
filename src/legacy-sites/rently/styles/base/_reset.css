@@ -1,0 +1,60 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   BASE: RESET
+   ═══════════════════════════════════════════════════════════════════════════════
+   Minimal CSS reset for consistent cross-browser styling.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
+html, body {
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Button and link defaults */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  touch-action: manipulation;
+}
+
+button:active, a:active {
+  opacity: 0.85;
+}
+
+/* Prevent text selection on UI elements */
+button, .nav, .sidebar-nav, .project-tabs {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth image rendering */
+img, video {
+  image-rendering: -webkit-optimize-contrast;
+}

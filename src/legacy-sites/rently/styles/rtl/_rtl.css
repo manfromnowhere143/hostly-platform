@@ -1,0 +1,193 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RTL: RIGHT-TO-LEFT SUPPORT
+   ═══════════════════════════════════════════════════════════════════════════════
+   All RTL overrides consolidated in one place.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Base RTL */
+.rently.rtl {
+  direction: rtl;
+  font-family: var(--font-hebrew);
+}
+
+/* Hebrew fonts for all text */
+.rently.rtl h1, .rently.rtl h2, .rently.rtl h3, .rently.rtl h4, .rently.rtl h5, .rently.rtl h6,
+.rently.rtl p, .rently.rtl span, .rently.rtl a, .rently.rtl button, .rently.rtl div {
+  font-family: var(--font-hebrew);
+}
+
+/* Display fonts for headings */
+.rently.rtl .hero-title,
+.rently.rtl .hero-subtitle,
+.rently.rtl .hero-cta,
+.rently.rtl .section-title,
+.rently.rtl .luxury-title,
+.rently.rtl .experience-name,
+.rently.rtl .amenity-name,
+.rently.rtl .architecture-title,
+.rently.rtl .contact-title,
+.rently.rtl .apt-card-name,
+.rently.rtl .modal-title {
+  font-family: var(--font-hebrew-display);
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+/* Center alignment for key sections */
+.rently.rtl .section-header,
+.rently.rtl .section-title,
+.rently.rtl .section-eyebrow,
+.rently.rtl .section-subtitle,
+.rently.rtl .hero-content,
+.rently.rtl .hero-title,
+.rently.rtl .hero-subtitle,
+.rently.rtl .hero-desc,
+.rently.rtl .experience-card,
+.rently.rtl .experience-name,
+.rently.rtl .experience-desc,
+.rently.rtl .contact-cta,
+.rently.rtl .contact-card,
+.rently.rtl .footer-inner,
+.rently.rtl .apt-page-header {
+  text-align: center !important;
+}
+
+.rently.rtl .section-line {
+  margin: 0 auto 1.5rem !important;
+}
+
+/* Right-align for content blocks */
+.rently.rtl .content-text,
+.rently.rtl .architecture-content,
+.rently.rtl .architecture-desc,
+.rently.rtl .amenities-content,
+.rently.rtl .amenity-item,
+.rently.rtl .modal-desc,
+.rently.rtl .contact-value {
+  text-align: right;
+}
+
+.rently.rtl .content-grid,
+.rently.rtl .architecture-grid,
+.rently.rtl .amenities-grid {
+  direction: rtl;
+}
+
+/* Amenity items border */
+.rently.rtl .amenity-item {
+  border-left: none;
+  border-right: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.rently.rtl .amenity-item:hover { padding-left: 0; padding-right: 1.5rem; }
+.rently.rtl .amenity-item::before { left: auto; right: 0; }
+
+/* Architecture section */
+.rently.rtl .architecture-eyebrow {
+  justify-content: flex-end;
+}
+
+.rently.rtl .architecture-eyebrow::before { display: none; }
+.rently.rtl .architecture-eyebrow::after { content: ''; width: 40px; height: 1px; background: var(--velvet); }
+
+.rently.rtl .architecture-title {
+  text-align: right;
+}
+
+.rently.rtl .architecture-stats {
+  justify-content: flex-end;
+}
+
+/* Sidebar RTL - Now in layout/_sidebar.css, keeping only additional overrides */
+
+/* Top Header RTL */
+.rently.rtl .top-logo {
+  font-family: var(--font-hebrew-display) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Hero RTL */
+.rently.rtl .cb-hero-title {
+  font-family: var(--font-hebrew-display);
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+.rently.rtl .cb-hero-book-btn {
+  font-family: var(--font-hebrew);
+  letter-spacing: 0.05em;
+}
+
+/* Tagline RTL */
+.rently.rtl .cb-tagline {
+  font-family: var(--font-hebrew-display);
+  font-style: normal;
+}
+
+/* Section titles RTL */
+.rently.rtl .cb-section-title {
+  font-family: var(--font-hebrew-display);
+  letter-spacing: 0;
+}
+
+.rently.rtl .cb-amenities-title {
+  font-family: var(--font-hebrew-display);
+}
+
+.rently.rtl .cb-contact-title {
+  font-family: var(--font-hebrew-display);
+}
+
+/* Suite RTL */
+.rently.rtl .cb-suite-title {
+  font-family: var(--font-hebrew-display);
+  font-style: normal;
+}
+
+.rently.rtl .cb-suite-desc {
+  font-family: var(--font-hebrew);
+}
+
+.rently.rtl .cb-suite-amenity span {
+  font-family: var(--font-hebrew);
+}
+
+.rently.rtl .cb-suite-book-btn {
+  font-family: var(--font-hebrew);
+}
+
+.rently.rtl .cb-suite-showcase {
+  direction: rtl;
+}
+
+.rently.rtl .cb-suite-info {
+  text-align: right;
+}
+
+.rently.rtl .cb-suite-amenities {
+  justify-content: flex-start;
+}
+
+/* Apartments RTL */
+.rently.rtl .apt-title {
+  font-family: var(--font-hebrew-display);
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+.rently.rtl .apt-group-name {
+  font-family: var(--font-hebrew-display);
+  letter-spacing: 0;
+}
+
+.rently.rtl .apt-tab {
+  font-family: var(--font-hebrew);
+}
+
+/* Room card RTL */
+.rently.rtl .cb-room-name {
+  font-family: var(--font-hebrew-display);
+  letter-spacing: 0;
+}

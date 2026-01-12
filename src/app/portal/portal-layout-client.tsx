@@ -1,0 +1,383 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// PORTAL LAYOUT CLIENT
+// ═══════════════════════════════════════════════════════════════════════════════
+// Client-side portal layout with UnifiedSidebar in host mode.
+// State-of-the-art professional Airbnb-level dashboard layout.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+'use client'
+
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import {
+  UnifiedSidebar,
+  getHostNavGroups,
+  type NavItem,
+  type SidebarTheme,
+  type SidebarLang,
+} from '@/components/unified-sidebar'
+
+// ─── Host Configuration ────────────────────────────────────────────────────────
+// In production, this would come from the authenticated user's session
+const MOCK_HOST = {
+  slug: 'rently',
+  name: 'Rently',
+  location: 'Eilat, Israel',
+  tagline: { en: 'Luxury Vacation Rentals', he: 'השכרת נופש יוקרתית' },
+}
+
+export function PortalLayoutClient({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [currentTheme, setCurrentTheme] = useState<SidebarTheme>('white')
+  const [currentLang, setCurrentLang] = useState<SidebarLang>('en')
+
+  // Get host navigation for sidebar
+  const navGroups = getHostNavGroups(MOCK_HOST.slug)
+
+  // Handle navigation
+  const handleNavigate = useCallback((item: NavItem) => {
+    if (item.href) {
+      router.push(item.href)
+    }
+    setMobileMenuOpen(false)
+  }, [router])
+
+  // Apply theme class to body for dashboard CSS
+  useEffect(() => {
+    document.documentElement.setAttribute('data-portal-theme', currentTheme)
+    return () => {
+      document.documentElement.removeAttribute('data-portal-theme')
+    }
+  }, [currentTheme])
+
+  return (
+    <div className={`portal-layout theme-${currentTheme}`}>
+      <UnifiedSidebar
+        mode="host"
+        host={{
+          slug: MOCK_HOST.slug,
+          name: MOCK_HOST.name,
+          location: MOCK_HOST.location,
+          tagline: MOCK_HOST.tagline,
+        }}
+        navGroups={navGroups}
+        onNavigate={handleNavigate}
+        activePath={pathname}
+        collapsed={sidebarCollapsed}
+        onCollapsedChange={setSidebarCollapsed}
+        theme={currentTheme}
+        onThemeChange={setCurrentTheme}
+        lang={currentLang}
+        onLangChange={setCurrentLang}
+        showBookButton={false}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
+
+      {/* Main content area - properly positioned next to sidebar */}
+      <main className={`portal-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <div className="portal-content">
+          {children}
+        </div>
+      </main>
+
+      {/* Mobile menu button */}
+      <button
+        className="portal-mobile-menu"
+        onClick={() => setMobileMenuOpen(true)}
+        aria-label="Open menu"
+      >
+        <span className="portal-menu-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+        <span className="portal-menu-text">Menu</span>
+      </button>
+
+      <style jsx global>{`
+        /* ═══════════════════════════════════════════════════════════════════════
+           PORTAL LAYOUT - State-of-the-Art Professional Dashboard
+           Airbnb-level polish with proper sidebar integration
+           ═══════════════════════════════════════════════════════════════════════ */
+
+        :root {
+          --sidebar-width-expanded: 280px;
+          --sidebar-width-collapsed: 72px;
+          --portal-transition: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .portal-layout {
+          display: flex;
+          min-height: 100vh;
+          background: #f8f6f3;
+          position: relative;
+          width: 100%;
+        }
+
+        /* Theme backgrounds */
+        .portal-layout.theme-white {
+          background: #ffffff;
+        }
+        .portal-layout.theme-cream {
+          background: #faf7f2;
+        }
+        .portal-layout.theme-petra {
+          background: #f5f0eb;
+        }
+        .portal-layout.theme-dark {
+          background: #121212;
+        }
+
+        /* ─── Main Content Area ────────────────────────────────────────────── */
+        .portal-main {
+          flex: 1;
+          min-height: 100vh;
+          margin-left: var(--sidebar-width-expanded);
+          width: calc(100% - var(--sidebar-width-expanded));
+          transition: margin-left var(--portal-transition), width var(--portal-transition);
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          z-index: 1;
+          box-sizing: border-box;
+        }
+
+        .portal-main.sidebar-collapsed {
+          margin-left: var(--sidebar-width-collapsed);
+          width: calc(100% - var(--sidebar-width-collapsed));
+        }
+
+        .portal-content {
+          flex: 1;
+          width: 100%;
+          max-width: 100%;
+          overflow-x: hidden;
+          box-sizing: border-box;
+        }
+
+        /* ─── Dashboard Overrides ──────────────────────────────────────────── */
+        /* Override Rently dashboard to fit within portal - CRITICAL */
+        .portal-content .rently {
+          min-height: auto !important;
+          height: 100% !important;
+          width: 100% !important;
+          background: transparent !important;
+        }
+
+        .portal-content .rently .dashboard {
+          min-height: calc(100vh - 48px) !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 32px 40px !important;
+          box-sizing: border-box !important;
+          background: transparent !important;
+        }
+
+        /* Dashboard Header - Professional alignment */
+        .portal-content .dashboard .dashboard-header {
+          padding-bottom: 24px;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          margin-bottom: 32px;
+        }
+
+        /* Summary Cards - Airbnb-style grid */
+        .portal-content .dashboard .summary-cards {
+          width: 100% !important;
+          display: grid !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 24px !important;
+          margin-bottom: 32px !important;
+        }
+
+        .portal-content .dashboard .summary-card {
+          background: white !important;
+          border-radius: 16px !important;
+          padding: 24px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+          border: 1px solid rgba(0, 0, 0, 0.04) !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .portal-content .dashboard .summary-card:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+          transform: translateY(-2px) !important;
+        }
+
+        /* Charts Row - Better proportions */
+        .portal-content .dashboard .charts-row {
+          display: grid !important;
+          grid-template-columns: 2fr 1fr !important;
+          gap: 24px !important;
+          margin-bottom: 32px !important;
+          width: 100% !important;
+        }
+
+        .portal-content .dashboard .chart-container {
+          background: white !important;
+          border-radius: 16px !important;
+          padding: 24px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+          border: 1px solid rgba(0, 0, 0, 0.04) !important;
+        }
+
+        /* Bottom Row */
+        .portal-content .dashboard .bottom-row {
+          display: grid !important;
+          grid-template-columns: 1.5fr 1fr !important;
+          gap: 24px !important;
+          width: 100% !important;
+        }
+
+        .portal-content .dashboard .rankings-container,
+        .portal-content .dashboard .panels-container {
+          background: white !important;
+          border-radius: 16px !important;
+          padding: 24px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+          border: 1px solid rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .portal-content .dashboard .panels-container {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 24px !important;
+          background: transparent !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          border: none !important;
+        }
+
+        .portal-content .dashboard .forecast-panel,
+        .portal-content .dashboard .alerts-panel {
+          background: white !important;
+          border-radius: 16px !important;
+          padding: 24px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+          border: 1px solid rgba(0, 0, 0, 0.04) !important;
+        }
+
+        /* Hide dashboard's own back button since we have sidebar */
+        .portal-content .dashboard .btn-back {
+          display: none !important;
+        }
+
+        /* Hide dashboard's own language toggle since sidebar has it */
+        .portal-content .dashboard .lang-toggle {
+          display: none !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+          .portal-content .dashboard .summary-cards {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+
+        @media (max-width: 1200px) {
+          .portal-content .dashboard .charts-row {
+            grid-template-columns: 1fr !important;
+          }
+          .portal-content .dashboard .bottom-row {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        /* ─── Mobile Menu Button ───────────────────────────────────────────── */
+        .portal-mobile-menu {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 100;
+          padding: 14px 24px;
+          background: linear-gradient(135deg, rgba(181, 132, 109, 0.95) 0%, rgba(161, 112, 89, 0.95) 100%);
+          color: white;
+          border: none;
+          border-radius: 30px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(181, 132, 109, 0.4);
+          display: none;
+          align-items: center;
+          gap: 10px;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+
+        .portal-menu-icon {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          width: 18px;
+        }
+
+        .portal-menu-icon span {
+          display: block;
+          height: 2px;
+          background: white;
+          border-radius: 1px;
+          transition: all 0.3s ease;
+        }
+
+        .portal-menu-icon span:nth-child(1) { width: 100%; }
+        .portal-menu-icon span:nth-child(2) { width: 70%; }
+        .portal-menu-icon span:nth-child(3) { width: 85%; }
+
+        .portal-menu-text {
+          font-weight: 500;
+          letter-spacing: 0.5px;
+        }
+
+        /* ─── Mobile Responsive ────────────────────────────────────────────── */
+        @media (max-width: 1024px) {
+          .portal-main {
+            margin-left: 0;
+            width: 100%;
+          }
+
+          .portal-main.sidebar-collapsed {
+            margin-left: 0;
+            width: 100%;
+          }
+
+          .portal-mobile-menu {
+            display: flex;
+          }
+
+          .portal-content .rently .dashboard {
+            padding: 16px !important;
+            padding-bottom: 100px !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .portal-content .rently .dashboard {
+            padding: 12px !important;
+            padding-bottom: 100px !important;
+          }
+        }
+
+        /* ─── Unified Sidebar Integration ──────────────────────────────────── */
+        /* Ensure sidebar is above content */
+        .unified-sidebar {
+          z-index: 50 !important;
+        }
+
+        /* Fix for sidebar backdrop on mobile */
+        .us-backdrop {
+          z-index: 40 !important;
+        }
+      `}</style>
+    </div>
+  )
+}

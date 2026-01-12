@@ -150,7 +150,15 @@ export class BoomSyncService {
       }
 
       // Convert from shekels to agorot (multiply by 100)
-      const priceInAgorot = (dayRate.price || 0) * 100
+      // Safety check: if price > 10,000, it's likely already in agorot (cents)
+      // Typical Israeli rentals are ₪500-₪3,000/night in shekels
+      const rawPrice = dayRate.price || 0
+      const priceInAgorot = rawPrice > 10000 ? rawPrice : rawPrice * 100
+
+      if (rawPrice > 10000) {
+        console.log(`[BoomSync] Price ${rawPrice} for ${date} appears to be in agorot already (not multiplying)`)
+      }
+
       nightlyRates.push({
         date,
         price: priceInAgorot,
@@ -161,15 +169,18 @@ export class BoomSyncService {
     }
 
     // Get cleaning fee from extra_info (convert to agorot)
+    // Safety check: if fee > 1000, it's likely already in agorot
     let cleaningFee = 0
     if (extraInfo.cleaning_fee) {
-      cleaningFee = (parseFloat(extraInfo.cleaning_fee) || 0) * 100
+      const rawFee = parseFloat(extraInfo.cleaning_fee) || 0
+      cleaningFee = rawFee > 1000 ? rawFee : rawFee * 100
     } else if (extraInfo.fees) {
       const cleaningFeeItem = extraInfo.fees?.find((f: any) =>
         f.title?.toLowerCase().includes('clean') || f.type === 'cleaning'
       )
       if (cleaningFeeItem) {
-        cleaningFee = (cleaningFeeItem.amount || 0) * 100
+        const rawFee = cleaningFeeItem.amount || 0
+        cleaningFee = rawFee > 1000 ? rawFee : rawFee * 100
       }
     }
 

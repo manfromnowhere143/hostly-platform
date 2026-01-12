@@ -237,27 +237,14 @@ export async function POST(
       promoCode,
     })
 
-    // Convert from shekels to agorot (multiply by 100)
+    // bookingService.generateQuote returns values already in agorot (property.basePrice is in agorot)
     return NextResponse.json({
       success: true,
       data: {
         ...quote,
         pricing: {
           ...quote.pricing,
-          nightlyRates: quote.pricing.nightlyRates.map(r => ({
-            ...r,
-            price: r.price * 100,
-          })),
-          accommodationTotal: quote.pricing.accommodationTotal * 100,
-          cleaningFee: quote.pricing.cleaningFee * 100,
-          serviceFee: quote.pricing.serviceFee * 100,
-          taxes: quote.pricing.taxes * 100,
-          discounts: quote.pricing.discounts.map(d => ({
-            ...d,
-            amount: d.amount * 100,
-          })),
-          discountTotal: quote.pricing.discountTotal * 100,
-          grandTotal: quote.pricing.grandTotal * 100,
+          // Values are already in agorot, no conversion needed
         },
         source: 'hostly', // Indicates fallback pricing
       },

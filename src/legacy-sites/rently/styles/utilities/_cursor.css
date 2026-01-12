@@ -1,0 +1,34 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UTILITIES: CUSTOM CURSOR
+   ═══════════════════════════════════════════════════════════════════════════════
+   Custom cursor for desktop interactions.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1024px) {
+  .rently { cursor: none; }
+
+  .custom-cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--velvet);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+  }
+
+  .custom-cursor-dot {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--velvet);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+}
+
+@media (max-width: 1023px) {
+  .custom-cursor, .custom-cursor-dot { display: none; }
+}

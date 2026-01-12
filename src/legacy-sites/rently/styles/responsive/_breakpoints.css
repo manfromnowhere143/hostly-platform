@@ -1,0 +1,13 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE: BREAKPOINTS
+   ═══════════════════════════════════════════════════════════════════════════════
+   Breakpoint reference (CSS custom properties don't work in media queries)
+
+   Mobile:      max-width: 480px
+   Tablet:      max-width: 768px
+   Laptop:      max-width: 1024px
+   Desktop:     min-width: 1025px
+   Wide:        min-width: 1400px
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* This file serves as documentation for breakpoints used across the codebase */

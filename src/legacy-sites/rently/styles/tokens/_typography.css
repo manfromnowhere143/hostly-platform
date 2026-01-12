@@ -1,0 +1,16 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS: TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════════════════
+   Font families, sizes, weights, and line heights.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.rently {
+  /* English Fonts */
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Montserrat', sans-serif;
+
+  /* Hebrew Fonts */
+  --font-hebrew: 'Assistant', 'Heebo', sans-serif;
+  --font-hebrew-display: 'Suez One', 'Frank Ruhl Libre', serif;
+  --font-hebrew-body: 'Rubik', 'Heebo', sans-serif;
+}

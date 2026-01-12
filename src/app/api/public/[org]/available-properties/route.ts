@@ -243,18 +243,18 @@ export async function GET(
             children,
           })
 
-          // Hostly returns shekels, multiply by 100 for agorot
+          // bookingService.generateQuote returns values already in agorot
           return {
             ...property,
             pricing: {
               nights: quote.nights,
-              accommodation: quote.pricing.accommodationTotal * 100,
-              cleaningFee: quote.pricing.cleaningFee * 100,
-              serviceFee: quote.pricing.serviceFee * 100,
-              taxes: quote.pricing.taxes * 100,
-              total: quote.pricing.grandTotal * 100,
+              accommodation: quote.pricing.accommodationTotal,
+              cleaningFee: quote.pricing.cleaningFee,
+              serviceFee: quote.pricing.serviceFee,
+              taxes: quote.pricing.taxes,
+              total: quote.pricing.grandTotal,
               currency: quote.pricing.currency,
-              averageNightlyRate: Math.round((quote.pricing.accommodationTotal / quote.nights) * 100),
+              averageNightlyRate: Math.round(quote.pricing.accommodationTotal / quote.nights),
               source: 'hostly',
             },
           }

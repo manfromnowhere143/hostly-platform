@@ -1,0 +1,26 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   BASE: GLOBAL
+   ═══════════════════════════════════════════════════════════════════════════════
+   Root .rently container styles and global defaults.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.rently {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain; /* Prevent pull-to-refresh */
+  scroll-behavior: smooth;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* NO transform here - breaks position:fixed for modals */
+}

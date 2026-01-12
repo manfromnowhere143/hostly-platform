@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LAYOUT: APP LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════════
+   Main application structure with sidebar and content area.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* App Layout Container */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  contain: layout;
+  background: var(--bg);
+}
+
+/* Architectural Grid Lines - Cheval Blanc Style */
+.cb-arch-grid {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 80px;
+  pointer-events: none;
+  z-index: 50;
+  transform: translateY(0);
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cb-arch-grid-left {
+  left: 280px;
+}
+
+.cb-arch-grid-right {
+  right: 0;
+}
+
+.app-layout.sidebar-collapsed .cb-arch-grid-left {
+  left: 70px;
+}
+
+@media (max-width: 1024px) {
+  .cb-arch-grid-left { left: 0; }
+  .cb-arch-grid { width: 50px; }
+}
+
+.cb-arch-line-h {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: var(--border);
+}
+
+.cb-arch-line-v {
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: var(--border);
+}
+
+.cb-arch-line-v-1 { left: 25px; }
+.cb-arch-line-v-2 { right: 25px; }
+
+.cb-arch-grid-right .cb-arch-line-v-1 { left: 25px; }
+.cb-arch-grid-right .cb-arch-line-v-2 { right: 25px; }
