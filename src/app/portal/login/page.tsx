@@ -56,9 +56,13 @@ export default function LoginPage() {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
 
-      // Store user info
-      localStorage.setItem('user', JSON.stringify(data.user))
-      localStorage.setItem('organization', JSON.stringify(data.organization))
+      // Store user info (only if valid)
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+      if (data.organization) {
+        localStorage.setItem('organization', JSON.stringify(data.organization))
+      }
 
       // Redirect to portal
       router.push('/portal')

@@ -64,17 +64,22 @@ export function PortalLayoutClient({
       // Load organization info from localStorage
       try {
         const orgData = localStorage.getItem('organization')
-        if (orgData) {
+        // Check for valid JSON (not null, not "undefined", not empty)
+        if (orgData && orgData !== 'undefined' && orgData !== 'null') {
           const org = JSON.parse(orgData)
-          setHostInfo({
-            slug: org.slug || 'my-properties',
-            name: org.name || 'My Properties',
-            location: '',
-            tagline: { en: 'Vacation Rentals', he: 'השכרת נופש' },
-          })
+          if (org && org.slug) {
+            setHostInfo({
+              slug: org.slug,
+              name: org.name || 'My Properties',
+              location: '',
+              tagline: { en: 'Vacation Rentals', he: 'השכרת נופש' },
+            })
+          }
         }
       } catch (e) {
         console.error('Failed to parse organization data:', e)
+        // Clear invalid data
+        localStorage.removeItem('organization')
       }
     }
   }, [pathname, router])
