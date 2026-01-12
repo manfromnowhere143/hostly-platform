@@ -19,12 +19,18 @@ import {
 import './portal-layout.css'
 
 // ─── Host Configuration ────────────────────────────────────────────────────────
-// In production, this would come from the authenticated user's session
-const MOCK_HOST = {
-  slug: 'rently',
-  name: 'Rently',
-  location: 'Eilat, Israel',
-  tagline: { en: 'Luxury Vacation Rentals', he: 'השכרת נופש יוקרתית' },
+interface HostInfo {
+  slug: string
+  name: string
+  location?: string
+  tagline?: { en: string; he: string }
+}
+
+const DEFAULT_HOST: HostInfo = {
+  slug: 'new-host',
+  name: 'My Properties',
+  location: '',
+  tagline: { en: 'Vacation Rentals', he: 'השכרת נופש' },
 }
 
 export function PortalLayoutClient({
@@ -39,8 +45,9 @@ export function PortalLayoutClient({
   const [currentTheme, setCurrentTheme] = useState<SidebarTheme>('white')
   const [currentLang, setCurrentLang] = useState<SidebarLang>('en')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [hostInfo, setHostInfo] = useState<HostInfo>(DEFAULT_HOST)
 
-  // ─── Auth Check ─────────────────────────────────────────────────────────────
+  // ─── Auth Check & Load User Organization ────────────────────────────────────
   useEffect(() => {
     // Skip auth check for login page
     if (pathname === '/portal/login') {
@@ -53,11 +60,27 @@ export function PortalLayoutClient({
       router.push('/portal/login')
     } else {
       setIsAuthenticated(true)
+
+      // Load organization info from localStorage
+      try {
+        const orgData = localStorage.getItem('organization')
+        if (orgData) {
+          const org = JSON.parse(orgData)
+          setHostInfo({
+            slug: org.slug || 'my-properties',
+            name: org.name || 'My Properties',
+            location: '',
+            tagline: { en: 'Vacation Rentals', he: 'השכרת נופש' },
+          })
+        }
+      } catch (e) {
+        console.error('Failed to parse organization data:', e)
+      }
     }
   }, [pathname, router])
 
   // Get host navigation for sidebar
-  const navGroups = getHostNavGroups(MOCK_HOST.slug)
+  const navGroups = getHostNavGroups(hostInfo.slug)
 
   // Handle navigation
   const handleNavigate = useCallback((item: NavItem) => {
@@ -104,10 +127,10 @@ export function PortalLayoutClient({
       <UnifiedSidebar
         mode="host"
         host={{
-          slug: MOCK_HOST.slug,
-          name: MOCK_HOST.name,
-          location: MOCK_HOST.location,
-          tagline: MOCK_HOST.tagline,
+          slug: hostInfo.slug,
+          name: hostInfo.name,
+          location: hostInfo.location,
+          tagline: hostInfo.tagline,
         }}
         navGroups={navGroups}
         onNavigate={handleNavigate}
