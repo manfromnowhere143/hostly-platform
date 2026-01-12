@@ -1267,7 +1267,10 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className={`min-h-screen bg-[#faf9f7] ${isRTL ? 'direction-rtl' : ''}`}>
+    <main
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className="min-h-screen bg-[#faf9f7]"
+    >
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
