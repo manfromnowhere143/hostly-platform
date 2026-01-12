@@ -22,7 +22,8 @@ const ORG_SLUG = getEnv('HOSTLY_ORG_SLUG', 'rently')
 /**
  * Fetch price intelligence for a property
  * @param {Object} params
- * @param {string} params.propertyId - Property ID
+ * @param {string} [params.propertyId] - Property ID (Hostly)
+ * @param {number} [params.boomId] - Boom PMS ID (for direct lookups)
  * @param {string} [params.checkIn] - Check-in date (YYYY-MM-DD)
  * @param {string} [params.checkOut] - Check-out date (YYYY-MM-DD)
  * @param {number} [params.guests] - Number of guests
@@ -30,6 +31,7 @@ const ORG_SLUG = getEnv('HOSTLY_ORG_SLUG', 'rently')
  */
 export async function fetchPriceIntelligence({
   propertyId,
+  boomId,
   checkIn,
   checkOut,
   guests = 2,
@@ -37,7 +39,9 @@ export async function fetchPriceIntelligence({
 }) {
   const params = new URLSearchParams()
 
-  if (propertyId) params.set('propertyId', propertyId)
+  // Prefer boomId for direct PMS lookups
+  if (boomId) params.set('boomId', boomId.toString())
+  else if (propertyId) params.set('propertyId', propertyId)
   if (checkIn) params.set('checkIn', checkIn)
   if (checkOut) params.set('checkOut', checkOut)
   params.set('guests', guests.toString())

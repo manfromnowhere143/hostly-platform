@@ -27,14 +27,19 @@
 
   /* ═══════════════════════════════════════════════════════════════════════════
      FOUNDATION - SCROLL & LAYOUT
+     ═══════════════════════════════════════════════════════════════════════════
+     NOTE: Global html/body rules REMOVED to prevent CSS leaking to marketplace.
+     Body styles are managed via JavaScript in RentlyLuxuryWrapper.tsx with cleanup.
+     The .rently container handles its own scroll containment.
      ═══════════════════════════════════════════════════════════════════════════ */
 
-  html {
+  /* Scoped body styles - only when .rently-active class is present on html */
+  html.rently-active {
     overflow: hidden !important;
     height: 100% !important;
   }
 
-  body {
+  html.rently-active body {
     overflow: hidden !important;
     height: 100% !important;
     margin: 0 !important;

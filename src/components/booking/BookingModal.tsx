@@ -6,10 +6,20 @@
 
 'use client'
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useMemo } from 'react'
 import { useBooking } from '@/contexts/BookingContext'
-import { useLanguage } from '@/contexts/LanguageContext'
 import './BookingModal.css'
+
+// ─── Language Hook ────────────────────────────────────────────────────────────
+// Use lang from booking context (passed via openBooking) for proper sync
+// Falls back to 'en' when no booking is open
+function useBookingLanguage() {
+  const { lang } = useBooking()
+  return useMemo(() => ({
+    lang: lang || 'en',
+    isRTL: lang === 'he',
+  }), [lang])
+}
 
 // --- Icons -------------------------------------------------------------------
 const Icons = {
@@ -193,7 +203,7 @@ function StepIndicator({ step, lang }: { step: string; lang: 'en' | 'he' }) {
 // --- Date Picker -------------------------------------------------------------
 function DatePicker() {
   const { checkIn, checkOut, setDates, isDateBlocked, availabilityCalendar, availabilityLoading } = useBooking()
-  const { lang, isRTL } = useLanguage()
+  const { lang, isRTL } = useBookingLanguage()
   const [currentMonth, setCurrentMonth] = useState(() => new Date())
   const [hoverDate, setHoverDate] = useState<Date | null>(null)
   const [selectionPhase, setSelectionPhase] = useState<'checkIn' | 'checkOut'>('checkIn')
@@ -371,7 +381,7 @@ function DatePicker() {
 // --- Guest Selector ----------------------------------------------------------
 function GuestSelector() {
   const { adults, children, infants, setGuests, property } = useBooking()
-  const { lang } = useLanguage()
+  const { lang } = useBookingLanguage()
   const t = translations[lang as keyof typeof translations]
 
   const maxGuests = property?.maxGuests || 10
@@ -417,7 +427,7 @@ function GuestSelector() {
 // --- Guest Form --------------------------------------------------------------
 function GuestForm() {
   const { guest, setGuestInfo, specialRequests, setSpecialRequests } = useBooking()
-  const { lang, isRTL } = useLanguage()
+  const { lang, isRTL } = useBookingLanguage()
   const t = translations[lang as keyof typeof translations]
 
   return (
@@ -492,7 +502,7 @@ function GuestForm() {
 // --- Price Breakdown ---------------------------------------------------------
 function PriceBreakdown() {
   const { quote, nights, quoteLoading } = useBooking()
-  const { lang } = useLanguage()
+  const { lang } = useBookingLanguage()
   const t = translations[lang as keyof typeof translations]
 
   if (quoteLoading) {
@@ -552,7 +562,7 @@ function PriceBreakdown() {
 // --- Confirmation ------------------------------------------------------------
 function BookingConfirmation() {
   const { booking, guest, closeBooking, property, checkIn, checkOut, nights } = useBooking()
-  const { lang } = useLanguage()
+  const { lang } = useBookingLanguage()
   const t = translations[lang as keyof typeof translations]
 
   const propertyName = typeof property?.name === 'object'
@@ -637,7 +647,7 @@ export function BookingModal() {
     setError,
   } = useBooking()
 
-  const { lang, isRTL } = useLanguage()
+  const { lang, isRTL } = useBookingLanguage()
   const [isClosing, setIsClosing] = useState(false)
 
   const t = translations[lang as keyof typeof translations]
@@ -754,11 +764,25 @@ export function BookingModal() {
                 <h2 className="property-name">{propertyName}</h2>
                 {checkIn && checkOut && (
                   <div className="selected-info">
-                    <span className="date-range">
-                      {checkIn.toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { month: 'short', day: 'numeric' })}
-                      {' → '}
-                      {checkOut.toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { month: 'short', day: 'numeric' })}
-                    </span>
+                    {/* Clickable date range - allows modification from any step */}
+                    <button
+                      type="button"
+                      className="date-range-btn"
+                      onClick={() => step !== 'dates' && setStep('dates')}
+                      title={lang === 'he' ? 'לחץ לשינוי תאריכים' : 'Click to change dates'}
+                    >
+                      <span className="date-range">
+                        {checkIn.toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { month: 'short', day: 'numeric' })}
+                        {' → '}
+                        {checkOut.toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                      {step !== 'dates' && (
+                        <svg className="edit-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      )}
+                    </button>
                     <span className="info-badge">
                       {Icons.moon} {nights} {nights === 1 ? t.night : t.nights}
                     </span>

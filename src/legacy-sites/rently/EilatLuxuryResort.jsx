@@ -17,14 +17,19 @@ import {
   TRANSLATIONS,
   SEASIDE_APARTMENTS,
   EILAT42_APARTMENTS,
+  EILAT42_GALLERY,
+  SEASIDE_GALLERY,
   PERFORMANCE_CONFIG
 } from './rently.config';
-import { useBooking } from './context/BookingContext';
+// ─── HOSTLY BOOKING ENGINE ───────────────────────────────────────────────────
+// Connected to real Boom PMS via Hostly's production booking system
+// Same engine used by the marketplace - consistent UX across all touchpoints
+import { useBooking } from '@/contexts/BookingContext';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // APARTMENT TO BOOKING PROPERTY TRANSFORMER
 // ═══════════════════════════════════════════════════════════════════════════════
-// Transforms apartment data to booking system property format
+// Transforms apartment data to booking system property format with Boom PMS IDs
 const apartmentToProperty = (apt, lang = 'en') => {
   // Build Hostly-compatible property ID (prop_s3, prop_e10, etc.)
   const hostlyId = `prop_${apt.id}`;
@@ -37,6 +42,7 @@ const apartmentToProperty = (apt, lang = 'en') => {
     id: hostlyId,
     slug: hostlySlug,
     localId: apt.id, // Keep original for reference
+    boomId: apt.boomId, // Boom PMS ID for real pricing/availability
     name: apt.name?.[lang] || apt.name?.en || apt.name,
     images: apt.images || [],
     specs: apt.specs,
@@ -349,7 +355,7 @@ const Icons = {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
-const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, onLangChange, onThemeChange }) => {
+const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, onLangChange, onThemeChange, externalNavigateTo, externalActiveProject }) => {
   // ─── Booking Context (Hostly Integration) ──────────────────────────────────
   const { openBooking: openHostlyBooking, isOpen: bookingModalOpen } = useBooking();
 
@@ -380,13 +386,38 @@ const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, o
   React.useEffect(() => {
     if (externalTheme && externalTheme !== theme) setThemeState(externalTheme);
   }, [externalTheme]);
+
   const [currentPage, setCurrentPage] = useState('resort');
+  const [activeProject, setActiveProject] = useState('seaside');
+
+  // ─── External Navigation Control (from UnifiedSidebar) ─────────────────────
+  // Respond to navigation commands from parent component
+  const [lastExternalNav, setLastExternalNav] = useState(null);
+
+  React.useEffect(() => {
+    // Create a unique key for this navigation request
+    const navKey = `${externalNavigateTo}-${externalActiveProject}`;
+
+    // Only act if this is a new navigation request
+    if (navKey !== lastExternalNav && (externalNavigateTo || externalActiveProject)) {
+      setLastExternalNav(navKey);
+
+      // Navigate to the requested page
+      if (externalNavigateTo && externalNavigateTo !== currentPage) {
+        setCurrentPage(externalNavigateTo);
+      }
+
+      // Set the active project
+      if (externalActiveProject) {
+        setActiveProject(externalActiveProject);
+      }
+    }
+  }, [externalNavigateTo, externalActiveProject, lastExternalNav, currentPage]);
   const [pageTransition, setPageTransition] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [apartmentImageIndex, setApartmentImageIndex] = useState(0);
   const [modalTransition, setModalTransition] = useState('idle'); // 'idle' | 'expanding' | 'open' | 'closing'
   const cardOriginRef = useRef(null); // Store clicked card's bounding rect
-  const [activeProject, setActiveProject] = useState('seaside');
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [aptVideoLoaded, setAptVideoLoaded] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false); // Legacy - kept for reference, using Hostly now
@@ -424,20 +455,30 @@ const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, o
   useBulletproofVideo(aptVideoRef, currentPage === 'apartments', setAptVideoLoaded);
 
   // ─── Hostly Booking System Integration ─────────────────────────────────────
-  // Opens the booking modal - either with a specific apartment or for date selection first
+  // Opens the Hostly booking modal with real Boom PMS pricing & availability
+  // Same booking engine used by the marketplace - consistent UX everywhere
   const handleOpenBooking = useCallback((apt = null) => {
     if (apt) {
-      // Specific apartment selected - transform and open with it
+      // Specific apartment selected - transform to Hostly property format
       const property = apartmentToProperty(apt, lang);
       setBookingApartment(apt);
-      openHostlyBooking(property, property.slug, lang);
+      // Open Hostly booking with property (includes boomId for real pricing)
+      openHostlyBooking(property, lang);
     } else {
-      // No apartment selected - open booking for date selection first
-      // User will see available apartments after selecting dates
-      setBookingApartment(null);
-      openHostlyBooking(null, null, lang);
+      // No apartment selected - pick first available from active project
+      // This enables "Book Now" buttons on hero/contact sections to work
+      const apartments = activeProject === 'eilat42' ? EILAT42_APARTMENTS : SEASIDE_APARTMENTS;
+      if (apartments.length > 0) {
+        const defaultApt = apartments[0];
+        const property = apartmentToProperty(defaultApt, lang);
+        setBookingApartment(defaultApt);
+        openHostlyBooking(property, lang);
+        console.log(`[Rently] Opening booking with default property: ${property.name} (${property.boomId})`);
+      } else {
+        console.warn('[Rently] No apartments available for booking');
+      }
     }
-  }, [lang, openHostlyBooking]);
+  }, [lang, openHostlyBooking, activeProject]);
 
   // ─── Card-to-Modal FLIP Animation ─────────────────────────────────────────
   const openApartmentModal = useCallback((apt, event) => {
@@ -1581,24 +1622,11 @@ const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, o
                 <h2 className="cb-gallery-title">{lang === 'en' ? 'The Residence' : 'המתחם'}</h2>
               </div>
               <div className="cb-gallery-grid">
-                <div className="cb-gallery-item cb-gallery-item-1 reveal">
-                  <SmoothImage src="/eilat42-1.jpg" alt="Eilat 42 Pool" />
-                </div>
-                <div className="cb-gallery-item cb-gallery-item-2 reveal">
-                  <SmoothImage src="/eilat42-5.jpg" alt="Eilat 42 Towers" />
-                </div>
-                <div className="cb-gallery-item cb-gallery-item-3 reveal">
-                  <SmoothImage src="/eilat42-3.jpg" alt="Eilat 42 Building" />
-                </div>
-                <div className="cb-gallery-item cb-gallery-item-4 reveal">
-                  <SmoothImage src="/eilat42-4.jpg" alt="Eilat 42 Resort" />
-                </div>
-                <div className="cb-gallery-item cb-gallery-item-5 reveal">
-                  <SmoothImage src="/eilat42-6.jpg" alt="Eilat 42 Poolside" />
-                </div>
-                <div className="cb-gallery-item cb-gallery-item-6 reveal">
-                  <SmoothImage src="/eilat42-2.jpg" alt="Eilat 42 Gardens" />
-                </div>
+                {EILAT42_GALLERY.map((img, idx) => (
+                  <div key={idx} className={`cb-gallery-item cb-gallery-item-${idx + 1} reveal`}>
+                    <SmoothImage src={img} alt={`Eilat 42 ${idx + 1}`} />
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -1637,7 +1665,7 @@ const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, o
                 <div className="cb-seaside-frame-line cb-seaside-frame-top" />
                 <div className="cb-seaside-frame-line cb-seaside-frame-bottom" />
                 <div className="cb-seaside-hero-image">
-                  <SmoothImage src="/seaside-hero.jpg" alt="Seaside Resort Aerial View" />
+                  <SmoothImage src={SEASIDE_GALLERY.hero} alt="Seaside Resort Aerial View" />
                 </div>
                 <div className="cb-seaside-hero-overlay" />
                 <div className="cb-seaside-hero-brand">
@@ -1649,34 +1677,24 @@ const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, o
             {/* Seaside Horizontal Scroll Gallery */}
             <section className="cb-seaside-scroll">
               <div className="cb-seaside-scroll-track">
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-pool.jpg" alt="Seaside Pool" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'The Pool' : 'הבריכה'}</span>
-                </div>
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-lobby1.jpg" alt="Seaside Lobby" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'Grand Atrium' : 'האטריום'}</span>
-                </div>
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-bar.jpg" alt="Seaside Bar" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'The Lounge' : 'הטרקלין'}</span>
-                </div>
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-night.jpg" alt="Seaside Night" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'By Night' : 'בלילה'}</span>
-                </div>
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-lobby2.jpg" alt="Seaside Evening Lobby" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'Golden Hour' : 'שעת הזהב'}</span>
-                </div>
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-elevators.jpg" alt="Seaside Interior" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'Elegance' : 'אלגנטיות'}</span>
-                </div>
-                <div className="cb-seaside-scroll-item">
-                  <SmoothImage src="/seaside-lobby3.jpg" alt="Seaside Lobby View" />
-                  <span className="cb-scroll-label">{lang === 'en' ? 'The Welcome' : 'הקבלה'}</span>
-                </div>
+                {SEASIDE_GALLERY.scroll.map((img, idx) => {
+                  const labels = [
+                    { en: 'The Pool', he: 'הבריכה' },
+                    { en: 'Grand Atrium', he: 'האטריום' },
+                    { en: 'The Lounge', he: 'הטרקלין' },
+                    { en: 'By Night', he: 'בלילה' },
+                    { en: 'Golden Hour', he: 'שעת הזהב' },
+                    { en: 'Elegance', he: 'אלגנטיות' },
+                    { en: 'The Welcome', he: 'הקבלה' },
+                  ];
+                  const label = labels[idx] || labels[0];
+                  return (
+                    <div key={idx} className="cb-seaside-scroll-item">
+                      <SmoothImage src={img} alt={`Seaside ${label.en}`} />
+                      <span className="cb-scroll-label">{lang === 'en' ? label.en : label.he}</span>
+                    </div>
+                  );
+                })}
               </div>
             </section>
 
@@ -1779,7 +1797,7 @@ const EilatLuxuryResort = ({ hideSidebar = false, externalLang, externalTheme, o
                   preload="auto"
                   className="cb-closing-video-player"
                 >
-                  <source src="/herorently4.mov" type="video/mp4" />
+                  <source src={URLS.heroVideo} type="video/mp4" />
                 </video>
                 <div className="cb-closing-video-overlay" />
                 <div className="cb-closing-video-content">

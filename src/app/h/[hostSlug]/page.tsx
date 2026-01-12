@@ -260,6 +260,10 @@ export default function HostHomePage({
   const [currentTheme, setCurrentTheme] = useState<SidebarTheme>('white')
   const [currentLang, setCurrentLang] = useState<SidebarLang>('en')
 
+  // Rently internal navigation control
+  const [rentlyNavigateTo, setRentlyNavigateTo] = useState<'resort' | 'apartments' | undefined>()
+  const [rentlyActiveProject, setRentlyActiveProject] = useState<'seaside' | 'eilat42' | undefined>()
+
   // Reference to the Rently content container for scrolling
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -268,9 +272,19 @@ export default function HostHomePage({
   const navGroups = getPublicNavGroups(hostSlug)
   const socialLinks = getSocialLinks(hostSlug)
 
-  // Handle navigation - scroll to section or navigate
+  // Handle navigation - scroll to section, navigate, or trigger Rently internal navigation
   const handleNavigate = useCallback((item: NavItem) => {
-    if (item.scrollTo) {
+    // Handle Rently internal navigation actions
+    if (item.action) {
+      if (item.action.navigateTo) {
+        setRentlyNavigateTo(item.action.navigateTo)
+      }
+      if (item.action.activeProject) {
+        setRentlyActiveProject(item.action.activeProject)
+      }
+    }
+    // Handle scroll to section
+    else if (item.scrollTo) {
       // First try to find by ID (most reliable)
       let element = document.getElementById(item.scrollTo)
 
@@ -373,6 +387,8 @@ export default function HostHomePage({
               lang={currentLang}
               onThemeChange={handleThemeChange}
               onLangChange={handleLangChange}
+              navigateTo={rentlyNavigateTo}
+              activeProject={rentlyActiveProject}
             />
           </main>
 
@@ -388,93 +404,6 @@ export default function HostHomePage({
               <span></span>
             </span>
           </button>
-
-          <style jsx global>{`
-            :root {
-              --sidebar-width-expanded: 280px;
-              --sidebar-width-collapsed: 72px;
-            }
-
-            .host-page-with-sidebar {
-              display: flex;
-              min-height: 100vh;
-            }
-
-            .host-page-content {
-              flex: 1;
-              margin-left: var(--sidebar-width-expanded);
-              transition: margin-left 350ms cubic-bezier(0.4, 0, 0.2, 1);
-              min-height: 100vh;
-            }
-
-            .host-page-content.sidebar-collapsed {
-              margin-left: var(--sidebar-width-collapsed);
-            }
-
-            /* Rently content no-sidebar adjustments */
-            .app-layout.no-sidebar {
-              padding-left: 0 !important;
-            }
-
-            .app-layout.no-sidebar .main-content {
-              margin-left: 0 !important;
-              width: 100% !important;
-            }
-
-            .mobile-menu-trigger {
-              position: fixed;
-              bottom: 24px;
-              left: 50%;
-              transform: translateX(-50%);
-              z-index: 100;
-              padding: 14px 28px;
-              background: linear-gradient(135deg, rgba(181, 132, 109, 0.95) 0%, rgba(161, 112, 89, 0.95) 100%);
-              color: white;
-              border: none;
-              border-radius: 30px;
-              font-size: 14px;
-              font-weight: 500;
-              cursor: pointer;
-              box-shadow: 0 4px 20px rgba(181, 132, 109, 0.4);
-              display: none;
-              align-items: center;
-              gap: 8px;
-              backdrop-filter: blur(10px);
-            }
-
-            .mobile-menu-icon {
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-              width: 18px;
-            }
-
-            .mobile-menu-icon span {
-              display: block;
-              height: 2px;
-              background: white;
-              border-radius: 1px;
-              transition: all 0.3s ease;
-            }
-
-            .mobile-menu-icon span:nth-child(2) {
-              width: 70%;
-            }
-
-            @media (max-width: 1024px) {
-              .host-page-content {
-                margin-left: 0;
-              }
-
-              .host-page-content.sidebar-collapsed {
-                margin-left: 0;
-              }
-
-              .mobile-menu-trigger {
-                display: flex;
-              }
-            }
-          `}</style>
 
           <BookingModal
             isOpen={bookingModalOpen}

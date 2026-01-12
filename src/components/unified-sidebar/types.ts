@@ -33,6 +33,10 @@ export interface NavItem {
   href?: string;                      // Route to navigate
   onClick?: () => void;               // Custom action
   scrollTo?: string;                  // Scroll to section ID
+  action?: {                          // Custom action for Rently-style navigation
+    navigateTo?: 'resort' | 'apartments';
+    activeProject?: 'seaside' | 'eilat42';
+  };
   children?: NavItem[];               // Sub-menu items
   badge?: string | number;            // Notification badge
   requiresAuth?: boolean;             // Only show in host mode

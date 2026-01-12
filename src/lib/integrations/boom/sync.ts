@@ -108,17 +108,20 @@ export class BoomSyncService {
 
       // Import photos from pictures array
       if (boomProp.pictures?.length) {
-        await prisma.propertyPhoto.createMany({
-          data: boomProp.pictures.map((pic, index) => ({
-            id: ids.photo(),
-            propertyId,
-            organizationId: context.organizationId,
-            url: pic.picture,
-            caption: pic.nickname || null,
-            sortOrder: index,
-            isPrimary: index === 0,
-          })),
-        })
+        const validPictures = boomProp.pictures.filter(pic => pic.picture)
+        if (validPictures.length) {
+          await prisma.propertyPhoto.createMany({
+            data: validPictures.map((pic, index) => ({
+              id: ids.photo(),
+              propertyId,
+              organizationId: context.organizationId,
+              url: pic.picture!,
+              caption: pic.nickname || null,
+              sortOrder: index,
+              isPrimary: index === 0,
+            })),
+          })
+        }
       }
     }
   }

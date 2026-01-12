@@ -16,25 +16,26 @@
    - NO position:fixed on body (causes viewport jump on iOS)
    - Use overflow:hidden + touch-action:none
    - Preserve scroll position
+   - SCOPED under html.rently-active to prevent leaking to marketplace
 */
 
-body.modal-open {
+html.rently-active body.modal-open {
   overflow: hidden !important;
   /* NO position:fixed - this causes the iOS viewport jump bug */
 }
 
-body.modal-open .rently {
+html.rently-active body.modal-open .rently {
   overflow: hidden !important;
   touch-action: none !important;
   /* Allow pointer events for modal interaction */
 }
 
 /* Ensure the modal itself receives pointer events */
-body.modal-open .cb-suite-modal {
+html.rently-active body.modal-open .cb-suite-modal {
   pointer-events: auto !important;
 }
 
-body.modal-open .cb-suite-modal * {
+html.rently-active body.modal-open .cb-suite-modal * {
   pointer-events: auto !important;
 }
 

@@ -166,6 +166,42 @@
   color: var(--booking-text);
 }
 
+/* Clickable date button - elegant edit capability */
+.date-range-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin: -6px -12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font: inherit;
+}
+
+.date-range-btn:hover {
+  background: var(--booking-surface);
+  border-color: var(--booking-border);
+}
+
+.date-range-btn:hover .edit-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.date-range-btn .edit-icon {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+  color: var(--booking-primary);
+}
+
+.date-range-btn:active {
+  transform: scale(0.98);
+}
+
 .info-badge {
   display: inline-flex;
   align-items: center;

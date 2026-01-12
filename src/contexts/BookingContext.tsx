@@ -7,7 +7,7 @@
 
 'use client'
 
-import { createContext, useContext, useReducer, useCallback, useMemo, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useReducer, useCallback, useMemo, ReactNode, useEffect, useRef } from 'react'
 
 // --- Types -------------------------------------------------------------------
 export type BookingStep = 'dates' | 'guests' | 'details' | 'payment' | 'confirmation'
@@ -229,7 +229,7 @@ interface BookingContextValue extends BookingState {
   canProceedToGuests: boolean
   canProceedToDetails: boolean
   canProceedToPayment: boolean
-  openBooking: (property: Property, lang?: Language) => void
+  openBooking: (property: Property, lang?: Language, prefill?: { checkIn?: Date; checkOut?: Date; adults?: number; children?: number }) => void
   closeBooking: () => void
   setStep: (step: BookingStep) => void
   setDates: (checkIn: Date | null, checkOut: Date | null) => void
@@ -252,9 +252,47 @@ const BookingContext = createContext<BookingContextValue | null>(null)
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(bookingReducer, initialState)
 
+  // ─── Request Cancellation ───────────────────────────────────────────────────
+  // AbortController to cancel stale requests when property changes
+  // Prevents race condition where apartment A's data overwrites apartment B's
+  const availabilityAbortRef = useRef<AbortController | null>(null)
+  const quoteAbortRef = useRef<AbortController | null>(null)
+
   // Actions
-  const openBooking = useCallback((property: Property, lang: Language = 'en') => {
+  const openBooking = useCallback((
+    property: Property,
+    lang: Language = 'en',
+    prefill?: { checkIn?: Date; checkOut?: Date; adults?: number; children?: number }
+  ) => {
+    // Cancel any pending requests when opening new booking
+    availabilityAbortRef.current?.abort()
+    quoteAbortRef.current?.abort()
     dispatch({ type: 'OPEN_BOOKING', payload: { property, lang } })
+
+    // Apply prefilled dates and guests if provided (e.g., from search)
+    // This creates a smart flow - skip the dates step if dates already selected!
+    if (prefill) {
+      const hasDates = prefill.checkIn && prefill.checkOut
+
+      if (hasDates) {
+        dispatch({ type: 'SET_DATES', payload: { checkIn: prefill.checkIn!, checkOut: prefill.checkOut! } })
+      }
+
+      if (prefill.adults !== undefined || prefill.children !== undefined) {
+        dispatch({
+          type: 'SET_GUESTS',
+          payload: {
+            adults: prefill.adults ?? 2,
+            children: prefill.children ?? 0,
+          }
+        })
+      }
+
+      // Skip to guests step if dates are pre-filled (smart flow from search!)
+      if (hasDates) {
+        dispatch({ type: 'SET_STEP', payload: 'guests' })
+      }
+    }
   }, [])
 
   const closeBooking = useCallback(() => {
@@ -293,12 +331,19 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   // REAL BOOM INTEGRATION - Fetch availability calendar
   // ════════════════════════════════════════════════════════════════════════════
   const fetchAvailability = useCallback(async (): Promise<void> => {
-    if (!state.property?.boomId) {
+    const boomId = state.property?.boomId
+    if (!boomId) {
       console.warn('[Booking] No Boom ID - cannot fetch real availability')
       return
     }
 
+    // Cancel any previous availability request to prevent race conditions
+    availabilityAbortRef.current?.abort()
+    const controller = new AbortController()
+    availabilityAbortRef.current = controller
+
     dispatch({ type: 'SET_AVAILABILITY_LOADING', payload: true })
+    console.log(`[Booking] Fetching availability for Boom ID: ${boomId}`)
 
     try {
       // Fetch 60 days of availability from Boom via price-intelligence API
@@ -307,14 +352,27 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       const checkOut = formatDate(addDays(today, 60))
 
       const response = await fetch(
-        `/api/public/rently/price-intelligence?boomId=${state.property.boomId}&checkIn=${checkIn}&checkOut=${checkOut}&guests=2`
+        `/api/public/rently/price-intelligence?boomId=${boomId}&checkIn=${checkIn}&checkOut=${checkOut}&guests=2`,
+        { signal: controller.signal }
       )
+
+      // Check if request was aborted (new property selected)
+      if (controller.signal.aborted) {
+        console.log(`[Booking] Request aborted for Boom ID: ${boomId} (property changed)`)
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Failed to fetch availability')
       }
 
       const data = await response.json()
+
+      // Double-check the response matches the current property (prevent stale data)
+      if (state.property?.boomId !== boomId) {
+        console.log(`[Booking] Discarding stale response for Boom ID: ${boomId} (current: ${state.property?.boomId})`)
+        return
+      }
 
       if (data.success && data.data?.calendar) {
         const calendar: NightlyRate[] = data.data.calendar.map((day: any) => ({
@@ -326,9 +384,14 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         }))
 
         dispatch({ type: 'SET_AVAILABILITY', payload: calendar })
-        console.log(`[Booking] Loaded ${calendar.length} days of real Boom availability`)
+        console.log(`[Booking] Loaded ${calendar.length} days of availability for Boom ID: ${boomId}`)
       }
     } catch (error) {
+      // Ignore abort errors - they're expected when switching properties
+      if ((error as Error).name === 'AbortError') {
+        console.log(`[Booking] Request cancelled for Boom ID: ${boomId}`)
+        return
+      }
       console.error('[Booking] Failed to fetch availability:', error)
       dispatch({ type: 'SET_AVAILABILITY_LOADING', payload: false })
     }

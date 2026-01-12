@@ -111,10 +111,11 @@ export default function BookingModal() {
     hasData: hasPriceData,
   } = usePriceIntelligence({
     propertyId: property?.id,
+    boomId: property?.boomId, // Direct Boom PMS ID for real data
     checkIn: checkInStr,
     checkOut: checkOutStr,
     guests: adults + children,
-    enabled: !!property?.id && isOpen,
+    enabled: !!(property?.id || property?.boomId) && isOpen,
   });
 
   // Handle selecting alternative dates

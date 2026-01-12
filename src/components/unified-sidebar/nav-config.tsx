@@ -177,18 +177,19 @@ export function getPublicNavGroups(hostSlug: string): NavGroup[] {
             number: '02',
             label: { en: 'Apartments', he: 'דירות' },
             icon: BuildingIcon,
+            action: { navigateTo: 'apartments' },
             children: [
               {
                 id: 'seaside',
                 label: { en: 'Sea Side', he: 'סי סייד' },
                 icon: WaveIcon,
-                scrollTo: 'seaside',
+                action: { navigateTo: 'apartments', activeProject: 'seaside' },
               },
               {
                 id: 'eilat42',
                 label: { en: 'Eilat 42', he: 'אילת 42' },
                 icon: SunIcon,
-                scrollTo: 'eilat42',
+                action: { navigateTo: 'apartments', activeProject: 'eilat42' },
               },
             ],
           },
@@ -212,6 +213,26 @@ export function getPublicNavGroups(hostSlug: string): NavGroup[] {
             label: { en: 'About', he: 'אודות' },
             icon: InfoIcon,
             scrollTo: 'about',
+          },
+        ],
+      },
+      // Host management - Only visible for authenticated hosts
+      {
+        id: 'host-actions',
+        items: [
+          {
+            id: 'dashboard',
+            number: '06',
+            label: { en: 'Dashboard', he: 'לוח בקרה' },
+            icon: DashboardIcon,
+            href: '/portal',
+            requiresAuth: true,
+          },
+          {
+            id: 'back-to-hostly',
+            label: { en: 'Hostly Marketplace', he: 'שוק הוסטלי' },
+            icon: ArrowLeftIcon,
+            href: '/',
           },
         ],
       },

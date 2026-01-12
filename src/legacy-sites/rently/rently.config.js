@@ -26,6 +26,31 @@ export const HERO_IMAGES = [
   "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634356222-p71qye-PHOTO-2025-12-28-21-24-03_4.jpg"
 ];
 
+// ─── Building Gallery Images ─────────────────────────────────────────────────
+// Eilat 42 Building Gallery
+export const EILAT42_GALLERY = [
+  "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634337893-l3jtei-PHOTO-2025-12-28-21-24-01_2.jpg",
+  "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634344088-g0m5se-PHOTO-2025-12-28-21-24-02_3.jpg",
+  "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634347821-cg18qq-PHOTO-2025-12-28-21-24-02.jpg",
+  "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634350602-genla6-PHOTO-2025-12-28-21-24-03_2.jpg",
+  "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634353534-yq59i0-PHOTO-2025-12-28-21-24-03_3.jpg",
+  "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634356222-p71qye-PHOTO-2025-12-28-21-24-03_4.jpg"
+];
+
+// Sea Side Building Gallery
+export const SEASIDE_GALLERY = {
+  hero: "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634340731-dhswbh-PHOTO-2025-12-28-21-24-01.jpg",
+  scroll: [
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634337893-l3jtei-PHOTO-2025-12-28-21-24-01_2.jpg",
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634344088-g0m5se-PHOTO-2025-12-28-21-24-02_3.jpg",
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634347821-cg18qq-PHOTO-2025-12-28-21-24-02.jpg",
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634350602-genla6-PHOTO-2025-12-28-21-24-03_2.jpg",
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634353534-yq59i0-PHOTO-2025-12-28-21-24-03_3.jpg",
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634356222-p71qye-PHOTO-2025-12-28-21-24-03_4.jpg",
+    "https://xkmvvdvft005bytr.public.blob.vercel-storage.com/uploads/7348f31f-34f3-49aa-9470-f803364a159a/1767634340731-dhswbh-PHOTO-2025-12-28-21-24-01.jpg"
+  ]
+};
+
 // ─── Translations ────────────────────────────────────────────────────────────
 export const TRANSLATIONS = {
   en: {
@@ -200,40 +225,40 @@ const getAptImages = (project, folder, count = 4) => {
   return Array.from({ length: maxImages }, (_, i) => `/apartments/${project}/${folder}/${i + 1}.jpg`);
 };
 
-// ─── Sea Side Apartments ─────────────────────────────────────────────────────
+// ─── Sea Side Apartments - With Boom PMS IDs ─────────────────────────────────
 const seasideBaseApartments = [
-  { id: 's3', unit: '3', name: { en: "Mykonos", he: "מיקונוס" }, folder: 'mykonos' },
-  { id: 's22', unit: '22', name: { en: "Poppy", he: "פופי" }, folder: 'poppy' },
-  { id: 's29', unit: '29', name: { en: "Lily", he: "לילי" }, folder: 'lily' },
-  { id: 's33', unit: '33', name: { en: "Camellia", he: "קמיליה" }, folder: '33-camellia' },
-  { id: 's49', unit: '49', name: { en: "Ivy", he: "אייבי" }, folder: 'ivy' },
-  { id: 's62', unit: '62', name: { en: "Zinnia", he: "זיניה" }, folder: 'zinnia' },
-  { id: 's63', unit: '63', name: { en: "Daisy", he: "דייזי" }, folder: 'daisy' },
-  { id: 's78', unit: '78', name: { en: "Clover", he: "תלתן" }, folder: '78-clover' },
-  { id: 's79', unit: '79', name: { en: "Tranquil", he: "טרנקיל" }, folder: 'tranquil' },
-  { id: 's80', unit: '80', name: { en: "Rose", he: "רוז" }, folder: 'rose' },
-  { id: 's81', unit: '81', name: { en: "Rosy", he: "רוזי" }, folder: 'rosy' },
-  { id: 's86', unit: '86', name: { en: "Flora", he: "פלורה" }, folder: 'flora' },
-  { id: 's95', unit: '95', name: { en: "Zinnia II", he: "זיניה" }, folder: 'zinnia2' },
-  { id: 's111', unit: '111', name: { en: "Jasmine", he: "יסמין" }, folder: 'jasmine' },
-  { id: 's129', unit: '129', name: { en: "Marigold", he: "מרי גולד" }, folder: 'marigold' },
-  { id: 's140', unit: '140', name: { en: "Laura", he: "לורה" }, folder: 'laura' },
-  { id: 's151', unit: '151', name: { en: "Tulip", he: "טוליפ" }, folder: 'tulip' },
-  { id: 's159', unit: '159', name: { en: "Lavender", he: "לבנדר" }, folder: 'lavender' },
-  { id: 's167', unit: '167', name: { en: "Lotus", he: "לוטוס" }, folder: 'lotus' },
-  { id: 's168', unit: '168', name: { en: "Sunflower", he: "חמניה" }, folder: 'sunflower' },
-  { id: 's172', unit: '172', name: { en: "Dahlia", he: "דליה" }, folder: 'dahlia' },
-  { id: 's197', unit: '197', name: { en: "Violet", he: "ויאולט" }, folder: 'violet' },
-  { id: 's199', unit: '199', name: { en: "Orchid", he: "אורכיד" }, folder: 'orchid' },
-  { id: 's205', unit: '205', name: { en: "Lagoon", he: "לגון" }, folder: 'lagoon' }
+  { id: 's3', unit: '3', name: { en: "Mykonos", he: "מיקונוס" }, folder: 'mykonos', boomId: 21102 },
+  { id: 's22', unit: '22', name: { en: "Poppy", he: "פופי" }, folder: 'poppy', boomId: 18271 },
+  { id: 's29', unit: '29', name: { en: "Lily", he: "לילי" }, folder: 'lily', boomId: 18270 },
+  { id: 's33', unit: '33', name: { en: "Camellia", he: "קמיליה" }, folder: '33-camellia', boomId: 18272 },
+  { id: 's49', unit: '49', name: { en: "Ivy", he: "אייבי" }, folder: 'ivy', boomId: 18268 },
+  { id: 's62', unit: '62', name: { en: "Zinnia", he: "זיניה" }, folder: 'zinnia', boomId: 18266 },
+  { id: 's63', unit: '63', name: { en: "Daisy", he: "דייזי" }, folder: 'daisy', boomId: 18267 },
+  { id: 's78', unit: '78', name: { en: "Clover", he: "תלתן" }, folder: '78-clover', boomId: 18265 },
+  { id: 's79', unit: '79', name: { en: "Tranquil", he: "טרנקיל" }, folder: 'tranquil', boomId: 18264 },
+  { id: 's80', unit: '80', name: { en: "Rose", he: "רוז" }, folder: 'rose', boomId: 19635 },
+  { id: 's81', unit: '81', name: { en: "Rosy", he: "רוזי" }, folder: 'rosy', boomId: 19651 },
+  { id: 's86', unit: '86', name: { en: "Flora", he: "פלורה" }, folder: 'flora', boomId: 18261 },
+  { id: 's95', unit: '95', name: { en: "Zinnia II", he: "זיניה" }, folder: 'zinnia2', boomId: 18250 },
+  { id: 's111', unit: '111', name: { en: "Jasmine", he: "יסמין" }, folder: 'jasmine', boomId: 18248 },
+  { id: 's129', unit: '129', name: { en: "Marigold", he: "מרי גולד" }, folder: 'marigold', boomId: 18234 },
+  { id: 's140', unit: '140', name: { en: "Laura", he: "לורה" }, folder: 'laura', boomId: 18253 },
+  { id: 's151', unit: '151', name: { en: "Tulip", he: "טוליפ" }, folder: 'tulip', boomId: 18239 },
+  { id: 's159', unit: '159', name: { en: "Lavender", he: "לבנדר" }, folder: 'lavender', boomId: 18244 },
+  { id: 's167', unit: '167', name: { en: "Lotus", he: "לוטוס" }, folder: 'lotus', boomId: 18249 },
+  { id: 's168', unit: '168', name: { en: "Sunflower", he: "חמניה" }, folder: 'sunflower', boomId: 22470 },
+  { id: 's172', unit: '172', name: { en: "Dahlia", he: "דליה" }, folder: 'dahlia', boomId: 18259 },
+  { id: 's197', unit: '197', name: { en: "Violet", he: "ויאולט" }, folder: 'violet', boomId: 18233 },
+  { id: 's199', unit: '199', name: { en: "Orchid", he: "אורכיד" }, folder: 'orchid', boomId: 18238 },
+  { id: 's205', unit: '205', name: { en: "Lagoon", he: "לגון" }, folder: 'lagoon', boomId: 18243 }
 ];
 
-// ─── Eilat 42 Apartments ─────────────────────────────────────────────────────
+// ─── Eilat 42 Apartments - With Boom PMS IDs ─────────────────────────────────
 const eilat42BaseApartments = [
-  { id: 'e10', unit: '10', building: '1', name: { en: "Mango", he: "מנגו" }, folder: '10-mango' },
-  { id: 'e13', unit: '13', building: '5', name: { en: "Strawberry", he: "תות" }, folder: '13-strawberry' },
-  { id: 'e15', unit: '15', building: '7', name: { en: "Peach", he: "אפרסק" }, folder: '15-peach' },
-  { id: 'e21', unit: '21', building: '5', name: { en: "Blueberry", he: "אוכמניה" }, folder: '21-blueberry' }
+  { id: 'e10', unit: '10', building: '1', name: { en: "Mango", he: "מנגו" }, folder: '10-mango', boomId: 18391 },
+  { id: 'e13', unit: '13', building: '5', name: { en: "Strawberry", he: "תות" }, folder: '13-strawberry', boomId: 18992 },
+  { id: 'e15', unit: '15', building: '7', name: { en: "Peach", he: "אפרסק" }, folder: '15-peach', boomId: 19627 },
+  { id: 'e21', unit: '21', building: '5', name: { en: "Blueberry", he: "אוכמניה" }, folder: '21-blueberry', boomId: 21112 }
 ];
 
 // ─── Generate Full Apartment Data ────────────────────────────────────────────

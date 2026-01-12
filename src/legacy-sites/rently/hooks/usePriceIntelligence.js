@@ -22,7 +22,8 @@ const cache = new Map()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 function getCacheKey(params) {
-  return `${params.propertyId}-${params.checkIn || ''}-${params.checkOut || ''}-${params.guests}-${params.flexDays}`
+  const id = params.boomId || params.propertyId
+  return `${id}-${params.checkIn || ''}-${params.checkOut || ''}-${params.guests}-${params.flexDays}`
 }
 
 function getFromCache(key) {
@@ -69,7 +70,8 @@ function useDebouncedValue(value, delay = 300) {
  * Hook for price intelligence data with SWR pattern
  *
  * @param {Object} params
- * @param {string} params.propertyId - Property ID
+ * @param {string} [params.propertyId] - Property ID (Hostly)
+ * @param {number} [params.boomId] - Boom PMS ID (preferred for direct lookups)
  * @param {string} [params.checkIn] - Check-in date
  * @param {string} [params.checkOut] - Check-out date
  * @param {number} [params.guests] - Number of guests
@@ -78,6 +80,7 @@ function useDebouncedValue(value, delay = 300) {
  */
 export function usePriceIntelligence({
   propertyId,
+  boomId,
   checkIn,
   checkOut,
   guests = 2,
@@ -97,14 +100,15 @@ export function usePriceIntelligence({
   const abortControllerRef = useRef(null)
   const lastFetchKeyRef = useRef('')
 
-  // Build params object
+  // Build params object (prefer boomId for direct PMS lookups)
   const params = useMemo(() => ({
     propertyId,
+    boomId,
     checkIn: debouncedCheckIn,
     checkOut: debouncedCheckOut,
     guests,
     flexDays,
-  }), [propertyId, debouncedCheckIn, debouncedCheckOut, guests, flexDays])
+  }), [propertyId, boomId, debouncedCheckIn, debouncedCheckOut, guests, flexDays])
 
   // Fetch function with SWR pattern
   const doFetch = useCallback(async (fetchParams, options = {}) => {
@@ -159,7 +163,8 @@ export function usePriceIntelligence({
 
   // Main effect - fetch when params change
   useEffect(() => {
-    if (!enabled || !propertyId) {
+    const hasId = boomId || propertyId
+    if (!enabled || !hasId) {
       return
     }
 
@@ -178,14 +183,15 @@ export function usePriceIntelligence({
         abortControllerRef.current.abort()
       }
     }
-  }, [params, enabled, doFetch])
+  }, [params, enabled, doFetch, boomId, propertyId])
 
   // Prefetch without dates (for base insights) - runs immediately on property change
   useEffect(() => {
-    if (!enabled || !propertyId) return
+    const hasId = boomId || propertyId
+    if (!enabled || !hasId) return
 
     // Prefetch base data (no dates) in background for instant scarcity/insights
-    const baseParams = { propertyId, guests, flexDays }
+    const baseParams = { propertyId, boomId, guests, flexDays }
     const baseCacheKey = getCacheKey(baseParams)
     const cached = getFromCache(baseCacheKey)
 
@@ -196,15 +202,15 @@ export function usePriceIntelligence({
       // Show cached base data immediately while waiting for date-specific data
       setData(cached.data)
     }
-  }, [propertyId, guests, flexDays, enabled, doFetch, data])
+  }, [propertyId, boomId, guests, flexDays, enabled, doFetch, data])
 
   // Manual refetch function
   const refetch = useCallback(() => {
     lastFetchKeyRef.current = '' // Clear to force refetch
-    if (propertyId) {
+    if (boomId || propertyId) {
       doFetch(params)
     }
-  }, [params, propertyId, doFetch])
+  }, [params, propertyId, boomId, doFetch])
 
   return {
     // Data (with safe defaults)

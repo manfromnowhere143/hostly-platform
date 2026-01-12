@@ -500,7 +500,7 @@ export function UnifiedSidebar({
                   const isItemActive = activePath
                     ? item.href === activePath ||
                       (item.href && activePath.startsWith(item.href) && item.href !== '/portal') ||
-                      item.children?.some(child => child.href === activePath)
+                      (item.children?.some(child => child.href === activePath) || false)
                     : false;
 
                   return (

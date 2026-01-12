@@ -223,19 +223,25 @@ export function Header({
                       href="/portal"
                       className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-subtle)]"
                     >
-                      Dashboard
+                      {t('header.dashboard')}
+                    </Link>
+                    <Link
+                      href="/h/rently"
+                      className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-subtle)]"
+                    >
+                      {lang === 'en' ? 'My Host Page' : 'עמוד המארח שלי'}
                     </Link>
                     <Link
                       href="/portal/bookings"
                       className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-subtle)]"
                     >
-                      My Bookings
+                      {t('header.myBookings')}
                     </Link>
                     <Link
                       href="/portal/settings"
                       className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-subtle)]"
                     >
-                      Settings
+                      {t('header.settings')}
                     </Link>
                     <hr className="my-1 border-[var(--border)]" />
                     <button
