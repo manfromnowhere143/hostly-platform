@@ -12,6 +12,7 @@
   --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
   --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-hebrew: var(--font-heebo), "Heebo", "Assistant", Arial, sans-serif;
 
   /* Z-Index Scale */
   --z-dropdown: 1000;
@@ -213,6 +214,16 @@ body {
   font-family: var(--font-sans);
   line-height: 1.5;
   min-height: 100vh;
+}
+
+/* ─── Hebrew Typography ───────────────────────────────────────────────────────── */
+.font-heebo,
+[dir="rtl"] {
+  font-family: var(--font-hebrew);
+}
+
+[dir="rtl"] .font-display {
+  font-family: var(--font-hebrew);
 }
 
 /* ─── Focus Styles ─────────────────────────────────────────────────────────────── */

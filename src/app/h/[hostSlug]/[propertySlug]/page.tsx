@@ -10,11 +10,13 @@ import { useState, useEffect, use } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useBooking } from '@/contexts/BookingContext'
 import { Button } from '@/components/ui'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface Property {
   id: string
+  boomId?: number // Real Boom PMS ID for live pricing
   slug: string
   name: string
   displayName?: string
@@ -93,14 +95,38 @@ export default function PropertyPage({
   const [loading, setLoading] = useState(true)
   const [currentImage, setCurrentImage] = useState(0)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
-  const { t, isRTL } = useLanguage()
+  const { t, isRTL, lang } = useLanguage()
+  const { openBooking } = useBooking()
 
-  // Fetch property data
+  // Open Hostly booking modal with real Boom data
+  const handleReserve = () => {
+    if (!property) return
+
+    const bookingProperty = {
+      id: property.id,
+      boomId: property.boomId,
+      slug: property.slug,
+      name: property.name,
+      images: property.images,
+      bedrooms: property.specs?.bedrooms,
+      beds: property.specs?.bedrooms,
+      bathrooms: property.specs?.bathrooms,
+      maxGuests: property.specs?.guests,
+      pricing: {
+        basePrice: property.price,
+        currency: property.currency || 'ILS',
+      },
+    }
+    console.log(`[Property] Opening booking for ${property.name} with Boom ID: ${property.boomId}`)
+    openBooking(bookingProperty, lang as 'en' | 'he')
+  }
+
+  // Fetch property data - refetch when language changes
   useEffect(() => {
     async function fetchProperty() {
       try {
         setLoading(true)
-        const response = await fetch(`/api/public/${hostSlug}/curated-listings?limit=50`)
+        const response = await fetch(`/api/public/${hostSlug}/curated-listings?limit=50&lang=${lang}`)
         const data = await response.json()
 
         if (data.success && data.data.listings.length > 0) {
@@ -117,7 +143,7 @@ export default function PropertyPage({
     }
 
     fetchProperty()
-  }, [hostSlug, propertySlug])
+  }, [hostSlug, propertySlug, lang])
 
   if (loading) {
     return (
@@ -362,11 +388,12 @@ export default function PropertyPage({
                 </div>
               </div>
 
-              {/* Reserve Button */}
+              {/* Reserve Button - Opens Hostly Booking Engine */}
               <Button
                 size="lg"
                 fullWidth
                 className="bg-gradient-to-r from-[#FF385C] to-[#BD1E59] hover:from-[#E31C5F] hover:to-[#A01852] mb-4"
+                onClick={handleReserve}
               >
                 {t('marketplace.reserve')}
               </Button>

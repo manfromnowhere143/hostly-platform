@@ -44,7 +44,7 @@ interface Property {
   description?: string
 }
 
-// ─── Category Data (Bilingual) ───────────────────────────────────────────────
+// ─── Category Data (Bilingual) - Elegant Emoji Icons ─────────────────────────
 const categories = [
   { id: 'beach', label: { en: 'Beach', he: 'חוף' }, icon: '🏖️' },
   { id: 'mountain', label: { en: 'Mountains', he: 'הרים' }, icon: '⛰️' },
@@ -125,6 +125,7 @@ function PropertyCard({ property, onSelect }: { property: Property; onSelect?: (
   const [isLiked, setIsLiked] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState<Record<number, boolean>>({})
+  const { isRTL, t } = useLanguage()
 
   // Check if image is a URL or a color code
   const isImageUrl = (img: string) => img.startsWith('http') || img.startsWith('/')
@@ -167,14 +168,14 @@ function PropertyCard({ property, onSelect }: { property: Property; onSelect?: (
           ))}
         </div>
 
-        {/* Favorite Button */}
+        {/* Favorite Button - RTL aware */}
         <button
           type="button"
           onClick={(e) => {
             e.preventDefault()
             setIsLiked(!isLiked)
           }}
-          className="absolute top-3 right-3 z-10 p-2 transition-transform hover:scale-110 active:scale-95"
+          className={`absolute top-3 ${isRTL ? 'left-3' : 'right-3'} z-10 p-2 transition-transform hover:scale-110 active:scale-95`}
           aria-label={isLiked ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <HeartIcon
@@ -185,11 +186,16 @@ function PropertyCard({ property, onSelect }: { property: Property; onSelect?: (
           />
         </button>
 
-        {/* Superhost Badge */}
+        {/* Superhost Badge - RTL aware, Elegant */}
         {property.isSuperhost && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm rounded-md text-xs font-medium text-[var(--foreground)]">
-              Superhost
+          <div className={`absolute top-3 ${isRTL ? 'right-3' : 'left-3'} z-10`}>
+            <span className={`
+              px-2.5 py-1 bg-white/95 backdrop-blur-sm rounded-md
+              text-[11px] font-medium tracking-wide text-[var(--neutral-700)]
+              shadow-sm
+              ${isRTL ? 'font-heebo' : 'uppercase'}
+            `}>
+              {t('marketplace.superhost')}
             </span>
           </div>
         )}
@@ -249,39 +255,51 @@ function PropertyCard({ property, onSelect }: { property: Property; onSelect?: (
         )}
       </div>
 
-      {/* Content */}
+      {/* Content - Elegant RTL-aware Typography */}
       <div
-        className="cursor-pointer"
+        className="cursor-pointer mt-3"
+        dir={isRTL ? 'rtl' : 'ltr'}
         onClick={() => onSelect?.(property)}
       >
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {/* Property Name & Rating */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-[var(--foreground)] truncate">
+            <h3 className={`
+              text-[14px] font-normal text-[var(--foreground)] truncate leading-snug
+              ${isRTL ? 'font-heebo' : 'tracking-tight'}
+            `}>
               {property.name}
             </h3>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <StarIcon className="w-4 h-4" />
-              <span className="text-sm">{(property.rating || 4.9).toFixed(2)}</span>
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <StarIcon className="w-3 h-3" />
+              <span className="text-[12px]">{(property.rating || 4.9).toFixed(2)}</span>
             </div>
           </div>
 
           {/* Location */}
-          <p className="text-[var(--foreground-muted)] text-sm truncate">
-            {property.location}
+          <p className={`
+            text-[12px] text-[var(--neutral-500)] truncate
+            ${isRTL ? 'font-heebo' : ''}
+          `}>
+            {isRTL ? 'אילת, ישראל' : property.location}
           </p>
 
           {/* Host */}
-          <p className="text-[var(--foreground-subtle)] text-sm">
-            Hosted by {property.hostName}
+          <p className={`
+            text-[12px] text-[var(--neutral-400)]
+            ${isRTL ? 'font-heebo' : ''}
+          `}>
+            {isRTL ? `מארח: ${property.hostName}` : `Hosted by ${property.hostName}`}
           </p>
 
           {/* Price */}
           <p className="pt-1">
-            <span className="font-semibold">
+            <span className={`text-[14px] font-medium text-[var(--foreground)] ${isRTL ? 'font-heebo' : ''}`}>
               {property.currency === 'ILS' ? '₪' : '$'}{property.price}
             </span>
-            <span className="text-[var(--foreground-muted)]"> night</span>
+            <span className={`text-[12px] text-[var(--neutral-500)] ${isRTL ? 'font-heebo' : ''}`}>
+              {isRTL ? ' ללילה' : ' night'}
+            </span>
           </p>
         </div>
       </div>
@@ -516,18 +534,18 @@ export default function HomePage() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
   const { lang, t, isRTL } = useLanguage()
 
-  // Fetch curated Rently properties
+  // Fetch curated Rently properties - refetch when language changes
   useEffect(() => {
     async function fetchProperties() {
       try {
         setLoading(true)
-        const response = await fetch('/api/public/rently/curated-listings?limit=28')
+        const response = await fetch(`/api/public/rently/curated-listings?limit=28&lang=${lang}`)
         const data = await response.json()
 
         if (data.success && data.data.listings.length > 0) {
           setProperties(data.data.listings)
           setTotalProperties(data.data.total)
-          console.log(`[Marketplace] Loaded ${data.data.listings.length} curated Rently properties`)
+          console.log(`[Marketplace] Loaded ${data.data.listings.length} curated Rently properties (${lang})`)
         } else {
           console.log('[Marketplace] No properties from API, using fallback')
           setProperties(fallbackProperties)
@@ -541,10 +559,10 @@ export default function HomePage() {
     }
 
     fetchProperties()
-  }, [])
+  }, [lang])
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Animated Gradient Background */}
@@ -572,15 +590,15 @@ export default function HomePage() {
               <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                 {/* Where */}
                 <div
-                  className={`flex-1 px-6 py-4 cursor-pointer hover:bg-[var(--neutral-100)] transition-colors ${isRTL ? 'rounded-r-full' : 'rounded-l-full'}`}
+                  className={`flex-1 px-6 py-4 cursor-pointer hover:bg-[var(--neutral-100)] transition-colors ${isRTL ? 'rounded-r-full text-right' : 'rounded-l-full'}`}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                 >
-                  <label className="block text-xs font-bold text-[var(--foreground)]">{t('marketplace.where')}</label>
+                  <label className={`block text-[11px] font-semibold text-[var(--foreground)] ${isRTL ? 'font-heebo' : 'uppercase tracking-wide'}`}>{t('marketplace.where')}</label>
                   <input
                     type="text"
                     placeholder={t('marketplace.searchDest')}
-                    className="w-full bg-transparent text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] outline-none"
+                    className={`w-full bg-transparent text-[13px] text-[var(--foreground)] placeholder:text-[var(--neutral-400)] outline-none ${isRTL ? 'font-heebo text-right' : ''}`}
                     onFocus={() => setSearchFocused(true)}
                     onBlur={() => setSearchFocused(false)}
                   />
@@ -590,28 +608,28 @@ export default function HomePage() {
                 <div className="w-px h-8 bg-[var(--neutral-200)]" />
 
                 {/* Check in */}
-                <div className="px-6 py-4 cursor-pointer hover:bg-[var(--neutral-100)] transition-colors">
-                  <label className="block text-xs font-bold text-[var(--foreground)]">{t('marketplace.checkIn')}</label>
-                  <span className="text-sm text-[var(--foreground-muted)]">{t('marketplace.addDates')}</span>
+                <div className={`px-6 py-4 cursor-pointer hover:bg-[var(--neutral-100)] transition-colors ${isRTL ? 'text-right' : ''}`}>
+                  <label className={`block text-[11px] font-semibold text-[var(--foreground)] ${isRTL ? 'font-heebo' : 'uppercase tracking-wide'}`}>{t('marketplace.checkIn')}</label>
+                  <span className={`text-[13px] text-[var(--neutral-400)] ${isRTL ? 'font-heebo' : ''}`}>{t('marketplace.addDates')}</span>
                 </div>
 
                 {/* Divider */}
                 <div className="w-px h-8 bg-[var(--neutral-200)]" />
 
                 {/* Check out */}
-                <div className="px-6 py-4 cursor-pointer hover:bg-[var(--neutral-100)] transition-colors">
-                  <label className="block text-xs font-bold text-[var(--foreground)]">{t('marketplace.checkOut')}</label>
-                  <span className="text-sm text-[var(--foreground-muted)]">{t('marketplace.addDates')}</span>
+                <div className={`px-6 py-4 cursor-pointer hover:bg-[var(--neutral-100)] transition-colors ${isRTL ? 'text-right' : ''}`}>
+                  <label className={`block text-[11px] font-semibold text-[var(--foreground)] ${isRTL ? 'font-heebo' : 'uppercase tracking-wide'}`}>{t('marketplace.checkOut')}</label>
+                  <span className={`text-[13px] text-[var(--neutral-400)] ${isRTL ? 'font-heebo' : ''}`}>{t('marketplace.addDates')}</span>
                 </div>
 
                 {/* Divider */}
                 <div className="w-px h-8 bg-[var(--neutral-200)]" />
 
                 {/* Who */}
-                <div className={`flex-1 flex items-center justify-between py-2 ${isRTL ? 'pr-6 pl-2' : 'pl-6 pr-2'}`}>
-                  <div className="cursor-pointer">
-                    <label className="block text-xs font-bold text-[var(--foreground)]">{t('marketplace.who')}</label>
-                    <span className="text-sm text-[var(--foreground-muted)]">{t('marketplace.addGuests')}</span>
+                <div className={`flex-1 flex items-center justify-between py-2 ${isRTL ? 'pr-6 pl-2 flex-row-reverse' : 'pl-6 pr-2'}`}>
+                  <div className={`cursor-pointer ${isRTL ? 'text-right' : ''}`}>
+                    <label className={`block text-[11px] font-semibold text-[var(--foreground)] ${isRTL ? 'font-heebo' : 'uppercase tracking-wide'}`}>{t('marketplace.who')}</label>
+                    <span className={`text-[13px] text-[var(--neutral-400)] ${isRTL ? 'font-heebo' : ''}`}>{t('marketplace.addGuests')}</span>
                   </div>
 
                   {/* Search Button */}
@@ -636,47 +654,44 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Pills - Airbnb Style */}
-      <section className="sticky top-16 z-40 bg-white border-b border-[var(--neutral-200)]">
+      {/* Category Pills - Centered, Elegant Design */}
+      <section className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-[var(--neutral-200)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8 py-4 overflow-x-auto scrollbar-hide">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setSelectedCategory(
-                  selectedCategory === category.id ? null : category.id
-                )}
-                className={`
-                  flex flex-col items-center gap-2 min-w-fit pb-2 border-b-2 transition-all
-                  ${selectedCategory === category.id
-                    ? 'border-[var(--foreground)] opacity-100'
-                    : 'border-transparent opacity-70 hover:opacity-100 hover:border-[var(--neutral-300)]'
-                  }
-                `}
-              >
-                <span className="text-2xl">{category.icon}</span>
-                <span className="text-xs font-medium whitespace-nowrap">{category.label[lang]}</span>
-              </button>
-            ))}
-
-            {/* Filters Button */}
-            <button
-              type="button"
-              className={`
-                flex items-center gap-2 px-4 py-3
-                border border-[var(--neutral-300)] rounded-xl
-                text-sm font-medium
-                hover:border-[var(--foreground)] hover:shadow-md
-                transition-all
-                ${isRTL ? 'mr-auto' : 'ml-auto'}
-              `}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-              </svg>
-              {t('marketplace.filters')}
-            </button>
+          <div className="flex items-center justify-center py-4 overflow-x-auto scrollbar-hide">
+            {/* Category Pills - Centered */}
+            <div className={`flex items-center justify-center gap-8 sm:gap-10 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {categories.map((category) => {
+                const isSelected = selectedCategory === category.id
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(isSelected ? null : category.id)}
+                    className={`
+                      group flex flex-col items-center justify-center
+                      min-w-fit pb-3 border-b-2 transition-all duration-200
+                      ${isSelected
+                        ? 'border-[var(--foreground)] opacity-100'
+                        : 'border-transparent opacity-60 hover:opacity-100 hover:border-[var(--neutral-300)]'
+                      }
+                    `}
+                  >
+                    <span className={`
+                      text-[22px] mb-1 transition-transform duration-200
+                      ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
+                    `}>
+                      {category.icon}
+                    </span>
+                    <span className={`
+                      text-[11px] font-medium whitespace-nowrap text-center
+                      ${isRTL ? 'font-heebo tracking-normal' : 'tracking-wide uppercase'}
+                    `}>
+                      {category.label[lang]}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>

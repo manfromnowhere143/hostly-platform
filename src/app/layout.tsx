@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google'
+import { Geist, Geist_Mono, Playfair_Display, Heebo } from 'next/font/google'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { BookingProvider } from '@/contexts/BookingContext'
 import { BookingModal } from '@/components/booking'
@@ -28,6 +28,13 @@ const geistMono = Geist_Mono({
 const playfair = Playfair_Display({
   variable: '--font-playfair',
   subsets: ['latin'],
+  display: 'swap',
+})
+
+// Heebo for Hebrew text (state-of-the-art Hebrew typography)
+const heebo = Heebo({
+  variable: '--font-heebo',
+  subsets: ['latin', 'hebrew'],
   display: 'swap',
 })
 
@@ -81,6 +88,7 @@ export default function RootLayout({
           ${geistSans.variable}
           ${geistMono.variable}
           ${playfair.variable}
+          ${heebo.variable}
           antialiased
         `}
       >
