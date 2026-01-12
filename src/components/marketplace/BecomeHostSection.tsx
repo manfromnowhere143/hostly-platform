@@ -302,10 +302,11 @@ export default function BecomeHostSection() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${isRTL ? 'lg:grid-flow-dense' : ''}`}>
+        {/* Flexbox layout - automatically reverses with dir="rtl" on parent */}
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
 
-          {/* Left Column - Content */}
-          <div className={`space-y-8 ${isRTL ? 'lg:col-start-2 text-right' : ''}`}>
+          {/* Content side (RIGHT in RTL, LEFT in LTR) */}
+          <div className="flex-1 space-y-8">
             {/* Social Proof Header */}
             <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <HostAvatarStack />
@@ -373,8 +374,8 @@ export default function BecomeHostSection() {
             </div>
           </div>
 
-          {/* Right Column - Earnings Calculator & Testimonial */}
-          <div className={`space-y-4 ${isRTL ? 'lg:col-start-1' : ''}`}>
+          {/* Calculator side (LEFT in RTL, RIGHT in LTR) */}
+          <div className="flex-1 space-y-4">
             <EarningsCalculator isRTL={isRTL} />
             <TestimonialBubble isRTL={isRTL} />
           </div>

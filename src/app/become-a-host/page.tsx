@@ -99,9 +99,10 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${isRTL ? 'lg:grid-flow-dense' : ''}`}>
-          {/* Content */}
-          <div className={`space-y-8 ${isRTL ? 'lg:col-start-2 text-right' : ''}`}>
+        {/* Flexbox layout - automatically reverses with dir="rtl" */}
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+          {/* Content - Text side (appears on RIGHT in RTL due to flex reversal) */}
+          <div className="flex-1 space-y-8">
             {/* Badge */}
             <div className={`inline-flex items-center gap-2 px-4 py-2 bg-[#B5846D]/10 rounded-full ${isRTL ? 'flex-row-reverse' : ''}`}>
               <span className="w-2 h-2 bg-[#B5846D] rounded-full animate-pulse" />
@@ -183,8 +184,8 @@ function HeroSection({ isRTL, t }: { isRTL: boolean; t: (key: string) => string 
             </div>
           </div>
 
-          {/* Earnings Calculator Card */}
-          <div className={`relative ${isRTL ? 'lg:col-start-1' : ''}`}>
+          {/* Earnings Calculator Card (appears on LEFT in RTL) */}
+          <div className="flex-1 relative">
             {/* Glow effect */}
             <div className="absolute -inset-4 bg-gradient-to-r from-[#B5846D]/20 via-[#8B6347]/20 to-[#B5846D]/20 rounded-3xl blur-2xl opacity-60" />
 
