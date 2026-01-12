@@ -303,10 +303,11 @@ function BusinessStep({
             value={formData.location}
             onChange={(e) => setFormData({ location: e.target.value })}
             className={`
-              w-full px-4 py-3 bg-[#f7f7f7] rounded-xl border-2 border-transparent
+              w-full px-4 py-3 bg-[#f7f7f7] rounded-xl border-2
               text-[#222] font-medium appearance-none cursor-pointer
               hover:bg-gray-100 focus:border-[#B5846D] focus:bg-white transition-all
               ${isRTL ? 'pr-12' : 'pl-12'}
+              ${errors.location ? 'border-red-500 bg-red-50' : 'border-transparent'}
             `}
             style={{ direction: isRTL ? 'rtl' : 'ltr' }}
           >
@@ -323,6 +324,9 @@ function BusinessStep({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
+        {errors.location && (
+          <p className={`text-sm text-red-500 ${isRTL ? 'text-right' : ''}`}>{errors.location}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -350,25 +354,30 @@ function BusinessStep({
       </div>
 
       {/* Terms checkbox */}
-      <label className={`flex items-start gap-3 cursor-pointer ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <input
-          type="checkbox"
-          checked={formData.agreedToTerms}
-          onChange={(e) => setFormData({ agreedToTerms: e.target.checked })}
-          className="w-5 h-5 mt-0.5 rounded border-gray-300 text-[#B5846D] focus:ring-[#B5846D]"
-        />
-        <span className={`text-sm text-[#717171] ${isRTL ? 'text-right' : ''}`}>
-          {isRTL ? (
-            <>
-              אני מסכים ל<Link href="/terms" className="text-[#B5846D] hover:underline">תנאי השימוש</Link> ול<Link href="/privacy" className="text-[#B5846D] hover:underline">מדיניות הפרטיות</Link>
-            </>
-          ) : (
-            <>
-              I agree to the <Link href="/terms" className="text-[#B5846D] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#B5846D] hover:underline">Privacy Policy</Link>
-            </>
-          )}
-        </span>
-      </label>
+      <div className="space-y-2">
+        <label className={`flex items-start gap-3 cursor-pointer ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <input
+            type="checkbox"
+            checked={formData.agreedToTerms}
+            onChange={(e) => setFormData({ agreedToTerms: e.target.checked })}
+            className={`w-5 h-5 mt-0.5 rounded border-gray-300 text-[#B5846D] focus:ring-[#B5846D] ${errors.agreedToTerms ? 'border-red-500' : ''}`}
+          />
+          <span className={`text-sm text-[#717171] ${isRTL ? 'text-right' : ''}`}>
+            {isRTL ? (
+              <>
+                אני מסכים ל<Link href="/terms" className="text-[#B5846D] hover:underline">תנאי השימוש</Link> ול<Link href="/privacy" className="text-[#B5846D] hover:underline">מדיניות הפרטיות</Link>
+              </>
+            ) : (
+              <>
+                I agree to the <Link href="/terms" className="text-[#B5846D] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#B5846D] hover:underline">Privacy Policy</Link>
+              </>
+            )}
+          </span>
+        </label>
+        {errors.agreedToTerms && (
+          <p className={`text-sm text-red-500 ${isRTL ? 'text-right' : ''}`}>{errors.agreedToTerms}</p>
+        )}
+      </div>
     </div>
   )
 }
