@@ -149,7 +149,10 @@ function CityTabs({
   isRTL: boolean
 }) {
   return (
-    <div className={`flex gap-2 overflow-x-auto pb-2 scrollbar-hide ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div
+      className={`flex gap-2 overflow-x-auto pb-2 ${isRTL ? 'flex-row-reverse' : ''}`}
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    >
       {cities.map((city) => (
         <button
           key={city.id}
@@ -468,16 +471,6 @@ export default function FeaturedHostsShowcase() {
         </div>
       </div>
 
-      {/* Custom Scrollbar Hide */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </section>
   )
 }
