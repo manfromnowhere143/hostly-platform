@@ -15,6 +15,7 @@ export interface SearchProperty {
   id: string
   slug: string
   name: string
+  boomId: number | null  // Required for booking flow integration
   organizationSlug: string
   organizationName?: string
   location?: string

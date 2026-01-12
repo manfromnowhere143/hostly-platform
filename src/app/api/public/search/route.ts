@@ -27,6 +27,7 @@ interface PropertyResult {
   id: string
   slug: string
   name: string
+  boomId: number | null  // Required for booking flow integration
   organizationSlug: string
   organizationName: string
   location: string | null
@@ -311,6 +312,7 @@ export async function GET(request: NextRequest) {
                   id: property.id,
                   slug: property.slug,
                   name: property.name,
+                  boomId: boomId || null,  // Pass boomId for booking integration
                   organizationSlug: org.slug,
                   organizationName: org.name,
                   location: typeof property.address === 'string' ? property.address : null,
@@ -353,6 +355,7 @@ export async function GET(request: NextRequest) {
                   id: property.id,
                   slug: property.slug,
                   name: property.name,
+                  boomId: boomIdFallback || null,  // Pass boomId for booking integration
                   organizationSlug: org.slug,
                   organizationName: org.name,
                   location: typeof property.address === 'string' ? property.address : null,

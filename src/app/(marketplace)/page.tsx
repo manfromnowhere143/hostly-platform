@@ -668,6 +668,7 @@ function SearchResultModal({
       id: property.id,
       slug: property.slug,
       name: property.name,
+      boomId: property.boomId || undefined,  // Critical: Required for Boom PMS booking integration
       images: property.photos.map(p => p.url),
       bedrooms: property.bedrooms || undefined,
       bathrooms: property.bathrooms || undefined,
