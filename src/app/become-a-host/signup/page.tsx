@@ -531,13 +531,22 @@ export default function SignupPage() {
           return
         }
 
-        // Store tokens
+        // Store tokens and user data
         if (data.accessToken) {
           localStorage.setItem('accessToken', data.accessToken)
           localStorage.setItem('refreshToken', data.refreshToken)
         }
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user))
+        }
+        if (data.organization) {
+          localStorage.setItem('organization', JSON.stringify(data.organization))
+        }
+        // Mark as needing onboarding
+        localStorage.setItem('needsOnboarding', 'true')
 
-        setStep('complete')
+        // Redirect directly to onboarding
+        router.push('/portal/onboarding')
       } catch (error) {
         setErrors({ email: isRTL ? 'שגיאת רשת' : 'Network error' })
       } finally {

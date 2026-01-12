@@ -1231,6 +1231,10 @@ export default function OnboardingPage() {
     try {
       // In production, submit to API
       await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      // Mark onboarding as complete
+      localStorage.removeItem('needsOnboarding')
+
       router.push('/portal?onboarding=complete')
     } catch (error) {
       console.error('Failed to publish:', error)

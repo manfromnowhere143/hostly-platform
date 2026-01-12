@@ -289,6 +289,7 @@ export function getPublicNavGroups(hostSlug: string): NavGroup[] {
 // ─── Host Navigation (Property managers in portal) ─────────────────────────────
 
 export function getHostNavGroups(hostSlug: string): NavGroup[] {
+  // Clean navigation for all hosts - no hardcoded data
   return [
     {
       id: 'management',
@@ -306,7 +307,7 @@ export function getHostNavGroups(hostSlug: string): NavGroup[] {
           number: '02',
           label: { en: 'My Website', he: 'האתר שלי' },
           icon: GlobeIcon,
-          href: `/h/${hostSlug}`,
+          href: '/portal/website',  // Goes to website builder/manager page
           requiresAuth: true,
         },
         {
@@ -315,7 +316,6 @@ export function getHostNavGroups(hostSlug: string): NavGroup[] {
           label: { en: 'Properties', he: 'נכסים' },
           icon: BuildingIcon,
           href: '/portal/properties',
-          badge: 28,
           requiresAuth: true,
         },
         {
@@ -324,7 +324,6 @@ export function getHostNavGroups(hostSlug: string): NavGroup[] {
           label: { en: 'Reservations', he: 'הזמנות' },
           icon: CalendarIcon,
           href: '/portal/reservations',
-          badge: 3,
           requiresAuth: true,
         },
         {

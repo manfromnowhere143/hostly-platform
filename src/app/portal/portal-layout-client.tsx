@@ -49,7 +49,7 @@ export function PortalLayoutClient({
 
   // ─── Auth Check & Load User Organization ────────────────────────────────────
   useEffect(() => {
-    // Skip auth check for login page
+    // Skip auth check for login and onboarding pages
     if (pathname === '/portal/login') {
       setIsAuthenticated(true)
       return
@@ -58,29 +58,37 @@ export function PortalLayoutClient({
     const token = localStorage.getItem('accessToken')
     if (!token) {
       router.push('/portal/login')
-    } else {
-      setIsAuthenticated(true)
+      return
+    }
 
-      // Load organization info from localStorage
-      try {
-        const orgData = localStorage.getItem('organization')
-        // Check for valid JSON (not null, not "undefined", not empty)
-        if (orgData && orgData !== 'undefined' && orgData !== 'null') {
-          const org = JSON.parse(orgData)
-          if (org && org.slug) {
-            setHostInfo({
-              slug: org.slug,
-              name: org.name || 'My Properties',
-              location: '',
-              tagline: { en: 'Vacation Rentals', he: 'השכרת נופש' },
-            })
-          }
+    setIsAuthenticated(true)
+
+    // Check if user needs to complete onboarding (skip if already on onboarding page)
+    const needsOnboarding = localStorage.getItem('needsOnboarding')
+    if (needsOnboarding === 'true' && !pathname.startsWith('/portal/onboarding')) {
+      router.push('/portal/onboarding')
+      return
+    }
+
+    // Load organization info from localStorage
+    try {
+      const orgData = localStorage.getItem('organization')
+      // Check for valid JSON (not null, not "undefined", not empty)
+      if (orgData && orgData !== 'undefined' && orgData !== 'null') {
+        const org = JSON.parse(orgData)
+        if (org && org.slug) {
+          setHostInfo({
+            slug: org.slug,
+            name: org.name || 'My Properties',
+            location: '',
+            tagline: { en: 'Vacation Rentals', he: 'השכרת נופש' },
+          })
         }
-      } catch (e) {
-        console.error('Failed to parse organization data:', e)
-        // Clear invalid data
-        localStorage.removeItem('organization')
       }
+    } catch (e) {
+      console.error('Failed to parse organization data:', e)
+      // Clear invalid data
+      localStorage.removeItem('organization')
     }
   }, [pathname, router])
 
